@@ -15,7 +15,29 @@ product.
 - Node.js ≥ 20
 - One Domustudio API key per archive (`X-DANEA-API-KEY`)
 
-## Install
+## Install it in another repository
+
+The package is not on any registry — it installs straight from this private
+repo, pinned to a release tag. One global install serves every repository on the
+machine.
+
+```sh
+npm install -g "github:Amministrazioni-DeSa/Domustudio-mcp#v0.1.0"
+```
+
+`npm` builds `dist/` during install, so the machine needs nothing beyond Node
+≥ 20 and read access to this repo. Then print the absolute path to hand the MCP
+client:
+
+```sh
+echo "$(npm root -g)/domustudio-mcp-server/dist/index.js"
+```
+
+and point each repository's MCP config at it — see **Configure** below. To
+upgrade, rerun the install command with a newer tag; every repository on the
+machine picks it up at once, which is the trade-off of a single global install.
+
+## Develop on it here
 
 ```sh
 npm install
@@ -34,7 +56,8 @@ coexist:
   "mcpServers": {
     "domustudio": {
       "command": "node",
-      "args": ["/percorso/assoluto/domustudio-mcp/dist/index.js"],
+      // output of: echo "$(npm root -g)/domustudio-mcp-server/dist/index.js"
+      "args": ["/absolute/path/to/domustudio-mcp-server/dist/index.js"],
       "env": {
         "DOMUSTUDIO_ARCHIVES": "[{\"name\":\"desa\",\"api_key\":\"...\"}]"
       }
