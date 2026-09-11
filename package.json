@@ -1,0 +1,56 @@
+{
+  "name": "domustudio-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server exposing the Danea Domustudio public API (condomini, persone, fornitori) as read-only tools.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "private": true,
+  "author": "Amministrazioni DeSa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amministrazioni-DeSa/Domustudio-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues"
+  },
+  "homepage": "https://github.com/Amministrazioni-DeSa/Domustudio-mcp#readme",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "domustudio",
+    "danea",
+    "condominio"
+  ],
+  "bin": {
+    "domustudio-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test",
+    "test": "tsc && vitest run",
+    "test:watch": "vitest",
+    "start": "node dist/index.js",
+    "inspector": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "test:unit": "vitest run",
+    "test:live": "tsc && DOMUSTUDIO_LIVE=1 vitest run test/live.test.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.2",
+    "eslint": "^10.10.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^3.2.0"
+  }
+}
