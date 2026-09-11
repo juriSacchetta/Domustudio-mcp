@@ -48,7 +48,17 @@ jobs:
           Install globally, pinned to this tag:
 
           ```sh
-          npm install -g "github:Amministrazioni-DeSa/Domustudio-mcp#__TAG__"
+          npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#__TAG__"
+          ```
+
+          `--allow-git=all` is required on npm 12+, which defaults `allow-git` to
+          `none`. The `install scripts blocked (prepare)` warning npm prints is
+          benign — the build already ran in npm's isolated step.
+
+          Prefer no git at all? The attached `.tgz` ships `dist/` prebuilt:
+
+          ```sh
+          npm install -g ./domustudio-mcp-server-__TAG_NOV__.tgz
           ```
 
           Print the absolute path to give the MCP client:
@@ -59,7 +69,7 @@ jobs:
 
           See `CHANGELOG.md` for what changed and `README.md` for configuration.
           NOTES
-          sed -i "s|__TAG__|${GITHUB_REF_NAME}|g" release-notes.md
+          sed -i "s|__TAG__|${GITHUB_REF_NAME}|g; s|__TAG_NOV__|${GITHUB_REF_NAME#v}|g" release-notes.md
           cat release-notes.md
 
       - name: Publish the release

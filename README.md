@@ -22,12 +22,31 @@ repo, pinned to a release tag. One global install serves every repository on the
 machine.
 
 ```sh
-npm install -g "github:Amministrazioni-DeSa/Domustudio-mcp#v0.1.0"
+npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.1.0"
 ```
 
-`npm` builds `dist/` during install, so the machine needs nothing beyond Node
-≥ 20 and read access to this repo. Then print the absolute path to hand the MCP
-client:
+`--allow-git=all` is required on **npm 12 and later**, which ships
+`allow-git = "none"` as a default and otherwise refuses the install with
+`EALLOWGIT`. To stop passing it every time:
+
+```sh
+npm config set allow-git all
+```
+
+npm builds `dist/` during install, so the machine needs nothing beyond Node ≥ 20
+and read access to this repo. npm 12 also prints
+`install scripts blocked … (prepare: npm run build)` — that warning is benign
+here: it refers to the consumer's tree, and the build has already run inside
+npm's isolated step for the git dependency. Confirm the install with:
+
+```sh
+test -f "$(npm root -g)/domustudio-mcp-server/dist/index.js" && echo installed
+```
+
+Do not run the entry point to "check" it: it is a stdio MCP server with no CLI,
+so it will start and wait for JSON-RPC on stdin rather than print anything.
+
+Then print the absolute path to hand the MCP client:
 
 ```sh
 echo "$(npm root -g)/domustudio-mcp-server/dist/index.js"
