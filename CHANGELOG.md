@@ -25,6 +25,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `JSON.parse` puts in its message, which repeated part of the credential.
 - A `.env` that exists but cannot be read is reported instead of being treated as
   absent, which had let a permissions mistake fall back to a different archive.
+- **The minimum Node version is now 22.12**, up from 20. Node 20 reached end of
+  life and the test runner no longer supports it; CI runs 22 and 24.
 - **Configure** in the README is split per client — Claude Code local scope, a
   committed `.mcp.json`, and GUI clients — because the previous single snippet,
   copied into `.mcp.json`, committed the API key ([#4]).
