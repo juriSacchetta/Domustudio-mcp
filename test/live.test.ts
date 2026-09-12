@@ -5,7 +5,7 @@ import { loadConfig } from "../src/config.js";
 import { leggiFileEnv } from "../src/env.js";
 import { ArchiveRegistry } from "../src/registry.js";
 import { avviaHarness, testo } from "./helpers/harness.js";
-import { DEFAULT_BASE_URL } from "../src/constants.js";
+import { DEFAULT_BASE_URL, MAX_PAGE_SIZE } from "../src/constants.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -38,6 +38,18 @@ describe.skipIf(!attivo)("API Domustudio reale", () => {
     expect(Array.isArray(condomini)).toBe(true);
     expect(condomini.length).toBeGreaterThan(0);
     expect(typeof condomini[0]!["id"]).toBe("number");
+  });
+
+  it("non serve più righe del tetto, per quanto se ne chiedano", async (ctx) => {
+    const client = new ArchiveRegistry(config).resolve(config.archives[0]!.name);
+
+    const oltreLaPrima = await client.get("persona", { PageNumber: 2, PageSize: MAX_PAGE_SIZE });
+    if (oltreLaPrima.length === 0) {
+      ctx.skip(`l'archivio non arriva a ${MAX_PAGE_SIZE} persone: il tetto non è misurabile`);
+    }
+
+    const chiestoIlDoppio = await client.get("persona", { PageNumber: 1, PageSize: MAX_PAGE_SIZE * 2 });
+    expect(chiestoIlDoppio).toHaveLength(MAX_PAGE_SIZE);
   });
 
   it("rifiuta una chiave errata con un errore di autenticazione, non di parsing", async () => {
