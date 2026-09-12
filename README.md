@@ -22,7 +22,7 @@ repo, pinned to a release tag. One global install serves every repository on the
 machine.
 
 ```sh
-npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.1.0"
+npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.2.0"
 ```
 
 `--allow-git=all` is required on **npm 12 and later**, which ships
@@ -46,15 +46,17 @@ test -f "$(npm root -g)/domustudio-mcp-server/dist/index.js" && echo installed
 Do not run the entry point to "check" it: it is a stdio MCP server with no CLI,
 so it will start and wait for JSON-RPC on stdin rather than print anything.
 
-Then print the absolute path to hand the MCP client:
+A global install puts `domustudio-mcp` on your `PATH`, which is the name a
+shell-launched client needs — confirm with `command -v domustudio-mcp`. A GUI
+client is launched without your `PATH` and needs the absolute path instead:
 
 ```sh
 echo "$(npm root -g)/domustudio-mcp-server/dist/index.js"
 ```
 
-and point each repository's MCP config at it — see **Configure** below. To
-upgrade, rerun the install command with a newer tag; every repository on the
-machine picks it up at once, which is the trade-off of a single global install.
+See **Configure** below for both. To upgrade, rerun the install command with a
+newer tag; every repository on the machine picks it up at once, which is the
+trade-off of a single global install.
 
 ## Develop on it here
 
@@ -65,12 +67,76 @@ npm run build
 
 ## Configure
 
-The server reads its credentials from the environment. `DOMUSTUDIO_ARCHIVES` is a
-JSON array — one API key addresses exactly one archive, and several archives may
-coexist:
+The server reads its credentials from the environment, and falls back to a `.env`
+file in its working directory for anything the environment does not carry.
+`DOMUSTUDIO_ARCHIVES` is a JSON array — one API key addresses exactly one
+archive, and several archives may coexist.
+
+### Claude Code, one project
+
+Add it at the default **local** scope: Claude Code stores that in `~/.claude.json`
+under the project's path, so the server loads in this project only, stays private
+to you, and nothing lands in the repository.
+
+```sh
+claude mcp add domustudio -e DOMUSTUDIO_ARCHIVES='[{"name":"desa","api_key":"..."}]' \
+  -- domustudio-mcp
+```
+
+The `--` is required: everything after it is the server's own command line. A key
+passed this way lands in your shell history; to avoid that, drop the `-e` and put
+the key in a `.env` as below — the server finds it either way.
+
+### A committed `.mcp.json`
+
+`.mcp.json` sits at the project root and is normally checked in, which is how a
+team shares one server definition — and exactly why **the key must not appear in
+it**. Leave the `env` block out and give each developer their own gitignored
+`.env`:
 
 ```jsonc
-// claude_desktop_config.json, .mcp.json, or your client's equivalent
+// .mcp.json — committed, no credentials
+{
+  "mcpServers": {
+    "domustudio": { "command": "domustudio-mcp" }
+  }
+}
+```
+
+```sh
+# .env at the project root — one per developer, never committed
+printf '.env\n' >> .gitignore
+printf 'DOMUSTUDIO_ARCHIVES=[{"name":"desa","api_key":"..."}]\n' >> .env
+chmod 600 .env
+```
+
+**Ignore it before you write it.** `.mcp.json` is committed and `.env` must not
+be; nothing in this server can stop a consuming repository from committing one.
+
+Claude Code launches the server with the project root as its working directory,
+which is where it looks. If your client launches it somewhere else, name the file
+outright in the `.mcp.json` entry — `DOMUSTUDIO_ENV_FILE` is a path, not a
+secret, so it is safe in a committed file. It has to arrive this way rather than
+from inside a `.env`, since it is what picks the file to read:
+
+```jsonc
+{ "mcpServers": { "domustudio": {
+  "command": "domustudio-mcp",
+  "env": { "DOMUSTUDIO_ENV_FILE": "/absolute/path/to/.env" }
+} } }
+```
+
+Real environment variables always win over the file. Keep the array on one line,
+or wrap a multi-line one in single quotes — `'[` … `]'`.
+
+### Claude Desktop and other GUI clients
+
+A GUI client is not launched from a shell and does not inherit your `PATH`, so
+the `domustudio-mcp` bin may not resolve. Give it Node and an absolute path. This
+file lives in your user profile, outside any repository, so the key may sit in it:
+
+```jsonc
+// claude_desktop_config.json — per user, never committed
 {
   "mcpServers": {
     "domustudio": {
@@ -85,17 +151,41 @@ coexist:
 }
 ```
 
+### Why `${DOMUSTUDIO_ARCHIVES}` does not work
+
+`.mcp.json` does expand `${VAR}`, but supplying the value through
+`.claude/settings.local.json` `env` did not work: the server never started, and
+the failure reproduced with a control confirming the variable was present in the
+session. That is what
+[#4](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues/4) observed.
+Why the expansion missed it — an ordering question between settings `env` and
+`.mcp.json` loading — was not established, so treat the recipe as "this does not
+work", not as a mechanism you can reason around.
+
+The symptom is worth recognising: an unexpanded variable is passed through as the
+literal text `${DOMUSTUDIO_ARCHIVES}`, which is not JSON, so the server exits 1
+and the client reports nothing more useful than
+`domustudio (CONNECTION_CLOSED): "Connection closed"`. From 0.2.0 the server
+names that literal on stderr instead.
+
+Exporting the variable from a shell rc file does make the expansion work, but it
+puts the key in a dotfile — no better than committing it. Prefer `.env`.
+
+### Variables
+
 | Variable | Required | Default |
 |---|---|---|
 | `DOMUSTUDIO_ARCHIVES` | yes | — |
 | `DOMUSTUDIO_BASE_URL` | no | `https://domustudioapi.danea.it/api/external` |
+| `DOMUSTUDIO_ENV_FILE` | no | `.env` in the working directory; set it empty to skip the lookup. Read from the client's environment only — it chooses the file, so setting it inside one has no effect |
 
 `DOMUSTUDIO_BASE_URL` exists for tests and for pointing at a mock; production
 should leave it unset. The default is HTTPS even though the OpenAPI `servers`
 entry says `http://`.
 
 The key is never echoed in a tool result: an authentication failure names the
-archive and the header, not the value.
+archive and the header, not the value. The startup line on stderr names the
+`.env` it read, never its contents.
 
 ## Tools
 

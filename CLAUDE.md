@@ -49,6 +49,7 @@ Facts that will bite an independent reimplementation:
 - Decision records go in `docs/adr/`; a `CONTEXT.md` glossary once the vocabulary earns one. Both are patterns the sibling repos follow.
 - Rationale lives in commit messages and `docs/adr/`, never in source comments.
 - Identifiers and user-facing strings are Italian; ADRs and this file are English.
+- Filenames under `src/` are one lowercase word: `config.ts`, `registry.ts`, `env.ts`.
 
 ## Layout
 
@@ -57,6 +58,7 @@ Facts that will bite an independent reimplementation:
 | `src/domustudio/client.ts` | HTTP client: auth headers, 1-based paging, retry policy |
 | `src/domustudio/enums.ts` | Integer enums → `{ codice, etichetta }` |
 | `src/config.ts`, `src/registry.ts` | `DOMUSTUDIO_ARCHIVES` parsing, one client per archive |
+| `src/env.ts` | `.env` fallback for the environment, so a committed `.mcp.json` carries no key |
 | `src/tools/` | One module per endpoint, plus `shared.ts` for the common zod fields and envelope |
 | `src/format.ts` | Markdown rendering and output truncation |
 | `test/helpers/mockApi.ts` | Local HTTP mock of the API, including the truncated 401 |

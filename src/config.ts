@@ -1,5 +1,19 @@
-import { ARCHIVES_ENV_VAR, BASE_URL_ENV_VAR, DEFAULT_BASE_URL } from "./constants.js";
+import {
+  ARCHIVES_ENV_VAR,
+  BASE_URL_ENV_VAR,
+  DEFAULT_BASE_URL,
+  ENV_FILE_ENV_VAR,
+} from "./constants.js";
 import { ConfigError } from "./errors.js";
+
+const VARIABILE_NON_ESPANSA = /^\$\{[^}]*\}$/;
+const FRAMMENTO_CITATO = /"[^"]*"(\.\.\.)?/g;
+
+/** `JSON.parse` quotes the offending input; the value is a credential, so drop the quotes. */
+function dettaglioJson(cause: unknown): string {
+  const messaggio = cause instanceof Error ? cause.message : String(cause);
+  return messaggio.replace(FRAMMENTO_CITATO, "…");
+}
 
 export interface ArchiveConfig {
   name: string;
@@ -27,13 +41,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     );
   }
 
+  if (VARIABILE_NON_ESPANSA.test(raw)) {
+    throw new ConfigError(
+      `${ARCHIVES_ENV_VAR} vale ancora "${raw}": il client non ha espanso la variabile. ` +
+        `Togliere il blocco "env" dalla configurazione del client e mettere la chiave in un file ` +
+        `.env nella directory di lavoro del server, oppure indicarlo con ${ENV_FILE_ENV_VAR}.`,
+    );
+  }
+
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch (cause) {
-    throw new ConfigError(
-      `${ARCHIVES_ENV_VAR} non è JSON valido: ${cause instanceof Error ? cause.message : String(cause)}`,
-    );
+    throw new ConfigError(`${ARCHIVES_ENV_VAR} non è JSON valido: ${dettaglioJson(cause)}`);
   }
 
   if (!Array.isArray(parsed) || parsed.length === 0) {

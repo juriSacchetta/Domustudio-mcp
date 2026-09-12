@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-09-12
+
+### Added
+
+- The server reads `DOMUSTUDIO_ARCHIVES` and `DOMUSTUDIO_BASE_URL` from a `.env`
+  in its working directory when the environment does not carry them, so a
+  committed `.mcp.json` needs no `env` block and no credentials.
+  `DOMUSTUDIO_ENV_FILE` names the file explicitly; set it empty to skip the
+  lookup. Real environment variables win over the file.
+
+### Changed
+
+- A `DOMUSTUDIO_ARCHIVES` still holding a literal `${VAR}` is reported as an
+  unexpanded client variable rather than as invalid JSON.
+- A quoted `.env` value is refused, naming the file and the key, when anything
+  but whitespace follows its closing quote or the opening quote is never closed.
+  Either case previously swallowed content in silence.
+- A malformed `DOMUSTUDIO_ARCHIVES` no longer carries the quoted fragment
+  `JSON.parse` puts in its message, which repeated part of the credential.
+- A `.env` that exists but cannot be read is reported instead of being treated as
+  absent, which had let a permissions mistake fall back to a different archive.
+- **Configure** in the README is split per client — Claude Code local scope, a
+  committed `.mcp.json`, and GUI clients — because the previous single snippet,
+  copied into `.mcp.json`, committed the API key ([#4]).
+
+[#4]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues/4
+
 ## [0.1.0] — 2026-09-11
 
 First release.
@@ -37,4 +64,5 @@ here:
 - A 401 arrives with a truncated chunked body; the status is classified before
   the body is read.
 
+[0.2.0]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/releases/tag/v0.1.0
