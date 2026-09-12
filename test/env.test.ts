@@ -59,7 +59,8 @@ describe("leggiFileEnv", () => {
   });
 
   it("nomina file e chiave senza mostrare il valore", () => {
-    const percorso = scrivi(".env", `DOMUSTUDIO_ARCHIVES="${unArchivio}"\n`);
+    const segreto = "CHIAVE-DA-NON-MOSTRARE";
+    const percorso = scrivi(".env", `DOMUSTUDIO_ARCHIVES="[{"name":"desa","api_key":"${segreto}"}]"\n`);
     try {
       leggiFileEnv(percorso);
       expect.unreachable();
@@ -67,7 +68,7 @@ describe("leggiFileEnv", () => {
       const messaggio = (errore as Error).message;
       expect(messaggio).toContain("DOMUSTUDIO_ARCHIVES");
       expect(messaggio).toContain(percorso);
-      expect(messaggio).not.toContain("k1");
+      expect(messaggio).not.toContain(segreto);
     }
   });
 
