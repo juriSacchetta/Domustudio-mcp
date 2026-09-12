@@ -62,9 +62,10 @@ dotenv parser that rots first.
 
 ## Consequences
 
-A committed `.mcp.json` is `{"command": "domustudio-mcp"}` and nothing else: no
-path, no credentials. The launcher script is unnecessary. Adding an archive is a
-`.env` edit.
+A committed `.mcp.json` carries no credentials: the default entry is
+`{"command": "domustudio-mcp"}` and nothing else, and a client that runs the
+server outside the project root adds a path-only `DOMUSTUDIO_ENV_FILE`. The
+launcher script is unnecessary. Adding an archive is a `.env` edit.
 
 The server parses the whole file, which in a consuming project may hold unrelated
 secrets. It takes only `DOMUSTUDIO_ARCHIVES` and `DOMUSTUDIO_BASE_URL` from it,

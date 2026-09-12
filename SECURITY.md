@@ -25,8 +25,10 @@ personal-data incident, not merely a service credential.
   in [`README.md`](README.md).
 - **A consuming repository must gitignore its own `.env`.** This repository's
   `.gitignore` protects this repository and nothing else.
-- **A credential never reaches an error message.** The `.env` is parsed for two
-  variables and the startup line names the file, not its contents. A malformed
+- **A credential never reaches an error message.** Every assignment in the file
+  is parsed, but only `DOMUSTUDIO_ARCHIVES` and `DOMUSTUDIO_BASE_URL` are used —
+  anything else a consuming project keeps there is read into memory and ignored.
+  The startup line names the file, not its contents. A malformed
   `DOMUSTUDIO_ARCHIVES` is reported by file and key; the quoted fragment
   `JSON.parse` puts in its own message is stripped before the error is raised.
 - **Keys never reach a tool result.** An authentication failure names the archive

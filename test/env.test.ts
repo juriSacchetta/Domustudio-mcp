@@ -1,3 +1,4 @@
+import { chmodSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { leggiFileEnv, risolviAmbiente } from "../src/env.js";
@@ -68,6 +69,21 @@ describe("leggiFileEnv", () => {
       expect(messaggio).toContain(percorso);
       expect(messaggio).not.toContain("k1");
     }
+  });
+
+  it("rifiuta un file che esiste ma non è leggibile", () => {
+    const percorso = scrivi("illeggibile.env", "A=1\n");
+    chmodSync(percorso, 0o000);
+    try {
+      expect(() => leggiFileEnv(percorso)).toThrow(ConfigError);
+    } finally {
+      chmodSync(percorso, 0o600);
+    }
+  });
+
+  it("tratta una directory come illeggibile, non come assente", () => {
+    mkdirSync(join(cartella.percorso, "cartella.env"));
+    expect(() => leggiFileEnv(join(cartella.percorso, "cartella.env"))).toThrow(ConfigError);
   });
 });
 

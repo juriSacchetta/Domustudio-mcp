@@ -23,6 +23,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Either case previously swallowed content in silence.
 - A malformed `DOMUSTUDIO_ARCHIVES` no longer carries the quoted fragment
   `JSON.parse` puts in its message, which repeated part of the credential.
+- A `.env` that exists but cannot be read is reported instead of being treated as
+  absent, which had let a permissions mistake fall back to a different archive.
 - **Configure** in the README is split per client — Claude Code local scope, a
   committed `.mcp.json`, and GUI clients — because the previous single snippet,
   copied into `.mcp.json`, committed the API key ([#4]).

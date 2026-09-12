@@ -6,19 +6,21 @@ import { ConfigError } from "./errors.js";
 const RIGA_ASSEGNAZIONE = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/;
 
 /**
- * Values of a `KEY=value` file, or `undefined` when the file cannot be read.
+ * Values of a `KEY=value` file, or `undefined` when the file does not exist.
  *
  * A value may be quoted with `'` or `"`, and a quoted value may span several lines; an
- * unquoted value ends at the newline. Throws `ConfigError` naming the file and the key,
- * never the value, when a quote is never closed or anything but whitespace follows the
- * closing one.
+ * unquoted value ends at the newline. Throws `ConfigError` when the file exists but
+ * cannot be read, when a quote is never closed, or when anything but whitespace follows
+ * the closing one — naming the file and the key, never the value.
  */
 export function leggiFileEnv(percorso: string): Record<string, string> | undefined {
   let contenuto: string;
   try {
     contenuto = readFileSync(percorso, "utf8");
-  } catch {
-    return undefined;
+  } catch (cause) {
+    const codice = (cause as NodeJS.ErrnoException).code;
+    if (codice === "ENOENT" || codice === "ENOTDIR") return undefined;
+    throw new ConfigError(`${percorso} esiste ma non è leggibile (${codice ?? String(cause)}).`);
   }
 
   const valori: Record<string, string> = {};
@@ -92,9 +94,10 @@ export interface AmbienteRisolto {
 
 /**
  * The process environment, backed by a `KEY=value` file: the one named by
- * `DOMUSTUDIO_ENV_FILE`, or `.env` in `cwd`. An empty `DOMUSTUDIO_ENV_FILE` skips the
- * lookup, real environment variables win over the file, and an unreadable
- * `DOMUSTUDIO_ENV_FILE` throws `ConfigError` where a missing `.env` is silent.
+ * `DOMUSTUDIO_ENV_FILE`, or `.env` in `cwd`. `DOMUSTUDIO_ENV_FILE` is read from `env`
+ * only — setting it inside the file has no effect, since the file is chosen first. An
+ * empty value skips the lookup, real environment variables win over the file, and a
+ * missing `.env` is silent where a missing `DOMUSTUDIO_ENV_FILE` target throws.
  *
  * See docs/adr/0005-credentials-from-an-env-file.md.
  */
@@ -109,7 +112,7 @@ export function risolviAmbiente(
   const dalFile = leggiFileEnv(percorso);
   if (dalFile === undefined) {
     if (indicato !== undefined) {
-      throw new ConfigError(`${ENV_FILE_ENV_VAR} indica "${percorso}", che non è leggibile.`);
+      throw new ConfigError(`${ENV_FILE_ENV_VAR} indica "${percorso}", che non esiste.`);
     }
     return { ambiente: env };
   }

@@ -115,8 +115,9 @@ be; nothing in this server can stop a consuming repository from committing one.
 
 Claude Code launches the server with the project root as its working directory,
 which is where it looks. If your client launches it somewhere else, name the file
-outright — `DOMUSTUDIO_ENV_FILE` is a path, not a secret, so it is safe in a
-committed file:
+outright in the `.mcp.json` entry — `DOMUSTUDIO_ENV_FILE` is a path, not a
+secret, so it is safe in a committed file. It has to arrive this way rather than
+from inside a `.env`, since it is what picks the file to read:
 
 ```jsonc
 { "mcpServers": { "domustudio": {
@@ -176,7 +177,7 @@ puts the key in a dotfile — no better than committing it. Prefer `.env`.
 |---|---|---|
 | `DOMUSTUDIO_ARCHIVES` | yes | — |
 | `DOMUSTUDIO_BASE_URL` | no | `https://domustudioapi.danea.it/api/external` |
-| `DOMUSTUDIO_ENV_FILE` | no | `.env` in the working directory; set it empty to skip the lookup |
+| `DOMUSTUDIO_ENV_FILE` | no | `.env` in the working directory; set it empty to skip the lookup. Read from the client's environment only — it chooses the file, so setting it inside one has no effect |
 
 `DOMUSTUDIO_BASE_URL` exists for tests and for pointing at a mock; production
 should leave it unset. The default is HTTPS even though the OpenAPI `servers`
