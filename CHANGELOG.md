@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The licence is now MIT**, replacing the proprietary "all rights reserved"
+  terms. Copyright stays with Amministrazioni DeSa.
+
+### Removed
+
+- The vendored `.claude/skills/mcp-builder/` copy, which carried its own
+  Apache-2.0 terms. `.claude/skills/` is now gitignored; install the skill
+  per-user instead.
+
 ## [0.2.0] — 2026-09-12
 
 ### Added

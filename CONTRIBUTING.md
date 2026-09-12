@@ -53,3 +53,8 @@ is upstream, not here.
 ## Touching credentials
 
 Never commit a real key. See [`SECURITY.md`](SECURITY.md).
+
+## Licence of contributions
+
+This project is MIT-licensed. By submitting a change you agree that it is
+released under those terms.

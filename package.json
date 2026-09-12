@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "MCP server exposing the Danea Domustudio public API (condomini, persone, fornitori) as read-only tools.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "author": "Amministrazioni DeSa",
   "repository": {

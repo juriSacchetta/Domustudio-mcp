@@ -2,9 +2,10 @@
 
 ## Reporting
 
-Report a suspected vulnerability privately to the repository owners — open a
-GitHub security advisory on this repository, or contact the maintainers
-directly. Do not open a public issue.
+Report a suspected vulnerability privately through GitHub's private
+vulnerability reporting on this repository — **Security → Report a
+vulnerability**. Do not open a public issue. If the form is unavailable, contact
+the maintainers directly.
 
 ## What this server handles
 
