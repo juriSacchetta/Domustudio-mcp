@@ -216,7 +216,13 @@ condominio `id` is the only stable handle the API exposes, and it is what
 
 **There is no total count.** Responses are bare JSON arrays. `ha_altre_pagine`
 is therefore a heuristic — true when the last page read was full — and is
-documented as such in the tool descriptions. See
+documented as such in the tool descriptions.
+
+**A page is reported to hold at most 100 records.** The API caps `PageSize`
+there and says nothing when it does, so `dimensione_pagina` is refused above
+that rather than sent and silently truncated. One `tutte_le_pagine` call
+therefore reaches 5 000 records — 100 per page, 50 pages. `npm run test:live`
+measures the cap against a real archive. See
 [docs/adr/0002](docs/adr/0002-pagination-without-a-total.md).
 
 ## Development

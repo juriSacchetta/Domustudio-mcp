@@ -5,7 +5,8 @@ export const DEFAULT_BASE_URL = "https://domustudioapi.danea.it/api/external";
 export const API_VERSION = "1.0";
 
 export const DEFAULT_PAGE_SIZE = 50;
-export const MAX_PAGE_SIZE = 500;
+/** The API's reported page cap; see docs/adr/0002-pagination-without-a-total.md. */
+export const MAX_PAGE_SIZE = 100;
 export const MAX_PAGES_PER_CALL = 50;
 
 export const REQUEST_TIMEOUT_MS = 30_000;

@@ -43,6 +43,7 @@ Facts that will bite an independent reimplementation:
 - **The reference client retries 5xx and timeouts only, never 4xx** — a 401 or 404 will not become a 200. That is its policy, not an API guarantee, and it has held in production.
 - `FiltroSubentri` takes `AnagraficaFiltroCondominiAttivi`: `1` tutti, `2` attivi, `3` ex, `4` contabilità, `5` destinatari comunicazioni. The reference client's sync passes `2`.
 - **Omitting `PageSize` does not disable paging: it defaults to 20.** Verified against the live API — `/persona` with no `PageNumber`/`PageSize` returned 20 records for a condominio that has more. Always send both.
+- **`PageSize` above 100 is served as 100, with nothing in the response to say so.** Reported from one live call, not yet verified against the live API here; `npm run test:live` measures it. `MAX_PAGE_SIZE` is that cap, so an over-cap request is refused instead of losing rows — issue #25.
 - Verified against the live API on 2026-09-11: the response field names match the spec exactly on all three endpoints, with no undocumented extras. Note the casing in `amministratore`: `codfisc` and `partiva`, not `codFisc`/`piva` as on the other schemas.
 - One API key addresses one **archive**. The reference client models credentials as a list and takes coexisting archives as a requirement — configure for several from the start, not one.
 

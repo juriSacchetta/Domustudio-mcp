@@ -69,6 +69,12 @@ export async function avviaMockApi(gestoreIniziale?: Gestore): Promise<MockApi> 
   };
 }
 
+/** A PageSize above this is served as this many rows, with nothing to say so. */
+const TETTO_PAGINA = 100;
+
+/** Omitting PageSize does not disable paging. */
+const DIMENSIONE_PAGINA_PREDEFINITA = 20;
+
 /** Serves `totale` synthetic records, honouring PageNumber/PageSize the way the API does. */
 export function gestorePaginato(
   totale: number,
@@ -76,7 +82,8 @@ export function gestorePaginato(
 ): Gestore {
   return (_req, res, richiesta) => {
     const pagina = Number(richiesta.query.get("PageNumber") ?? "1");
-    const dimensione = Number(richiesta.query.get("PageSize") ?? "50");
+    const dimensioneChiesta = Number(richiesta.query.get("PageSize") ?? DIMENSIONE_PAGINA_PREDEFINITA);
+    const dimensione = Math.min(dimensioneChiesta, TETTO_PAGINA);
     const inizio = (pagina - 1) * dimensione;
     const elementi = Array.from({ length: totale }, (_, i) => fabbrica(i)).slice(
       inizio,

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { MAX_PAGES_PER_CALL } from "../src/constants.js";
+import { MAX_PAGES_PER_CALL, MAX_PAGE_SIZE } from "../src/constants.js";
 import { avviaHarness, testo } from "./helpers/harness.js";
 import type { Harness } from "./helpers/harness.js";
 import {
@@ -89,7 +89,7 @@ describe("listTools", () => {
     const persone = tools.find((t) => t.name === "domustudio_list_persone")!;
     const props = persone.inputSchema.properties as Record<string, Record<string, unknown>>;
     expect(props["condominio_id"]!["type"]).toBe("integer");
-    expect(props["dimensione_pagina"]!["maximum"]).toBe(500);
+    expect(props["dimensione_pagina"]!["maximum"]).toBe(MAX_PAGE_SIZE);
     expect(props["pagina"]!["minimum"]).toBe(1);
     expect(props["response_format"]!["enum"]).toEqual(["markdown", "json"]);
     expect(persone.outputSchema?.type).toBe("object");
@@ -327,6 +327,28 @@ describe("domustudio_list_persone", () => {
     expect(risultato.isError).toBe(true);
     expect(testo(risultato)).toContain("dimensione_pagina");
     expect(api.richieste).toHaveLength(0);
+  });
+
+  it("rifiuta una dimensione di pagina oltre il tetto invece di perdere righe", async () => {
+    await apri();
+    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: 200 });
+
+    expect(risultato.isError).toBe(true);
+    expect(testo(risultato)).toContain("dimensione_pagina");
+    expect(api.richieste).toHaveLength(0);
+  });
+
+  it("alla dimensione massima riempie la pagina e segnala il seguito", async () => {
+    api.setGestore(gestorePaginato(MAX_PAGE_SIZE + 1, (i) => ({ descr: `Persona ${i}` })));
+    await apri();
+    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: MAX_PAGE_SIZE });
+
+    expect(risultato.structuredContent).toMatchObject({
+      conteggio: MAX_PAGE_SIZE,
+      pagine_lette: 1,
+      ha_altre_pagine: true,
+      prossima_pagina: 2,
+    });
   });
 
   it("trasforma un 401 in un errore dello strumento, non di protocollo", async () => {

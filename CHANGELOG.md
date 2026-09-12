@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **A `dimensione_pagina` above 100 no longer drops records in silence.** The
+  API caps a page at 100 without marking the response, so
+  `dimensione_pagina: 200` returned 100 records reporting
+  `ha_altre_pagine: false`, and `tutte_le_pagine` stopped after the first page
+  with nothing in the envelope to signal the loss
+  ([#25](https://github.com/juriSacchetta/Domustudio-mcp/issues/25)).
+
+### Changed
+
+- **`dimensione_pagina` now accepts at most 100**, down from 500, because that
+  is the API's own ceiling. A larger value is refused by validation before a
+  request is sent, instead of coming back short. One `tutte_le_pagine` call
+  therefore reaches 5 000 records rather than 25 000; beyond that
+  `troncato_al_limite_pagine` reports the cut, as it always has.
+
 ## [0.3.0] — 2026-09-12
 
 ### Changed
@@ -82,6 +101,7 @@ here:
 - A 401 arrives with a truncated chunked body; the status is classified before
   the body is read.
 
+[Unreleased]: https://github.com/juriSacchetta/Domustudio-mcp/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/juriSacchetta/Domustudio-mcp/releases/tag/v0.3.0
 [0.2.0]: https://github.com/juriSacchetta/Domustudio-mcp/releases/tag/v0.2.0
 [0.1.0]: https://github.com/juriSacchetta/Domustudio-mcp/releases/tag/v0.1.0
