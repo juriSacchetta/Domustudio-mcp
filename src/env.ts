@@ -5,19 +5,13 @@ import { ConfigError } from "./errors.js";
 
 const RIGA_ASSEGNAZIONE = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/;
 
-function valoreAmbiguo(chiave: string, percorso: string): ConfigError {
-  return new ConfigError(
-    `${chiave} in ${percorso}: c'è altro testo dopo la virgoletta di chiusura. ` +
-      `Un valore che contiene virgolette va racchiuso fra apici singoli.`,
-  );
-}
-
 /**
  * Values of a `KEY=value` file, or `undefined` when the file cannot be read.
  *
  * A value may be quoted with `'` or `"`, and a quoted value may span several lines; an
- * unquoted value ends at the newline. Throws `ConfigError` when anything but whitespace
- * follows the closing quote, rather than truncating the value there.
+ * unquoted value ends at the newline. Throws `ConfigError` naming the file and the key,
+ * never the value, when a quote is never closed or anything but whitespace follows the
+ * closing one.
  */
 export function leggiFileEnv(percorso: string): Record<string, string> | undefined {
   let contenuto: string;
@@ -29,6 +23,37 @@ export function leggiFileEnv(percorso: string): Record<string, string> | undefin
 
   const valori: Record<string, string> = {};
   const righe = contenuto.split("\n");
+
+  function ambiguo(chiave: string): ConfigError {
+    return new ConfigError(
+      `${chiave} in ${percorso}: c'è altro testo dopo la virgoletta di chiusura. ` +
+        `Un valore che contiene virgolette va racchiuso fra apici singoli.`,
+    );
+  }
+
+  /** Returns the value and the index of its last line; the caller resumes after it. */
+  function valoreEsteso(
+    inizio: number,
+    primoPezzo: string,
+    apice: string,
+    chiave: string,
+  ): { valore: string; ultimaRiga: number } {
+    const pezzi = [primoPezzo];
+    for (let i = inizio + 1; i < righe.length; i++) {
+      const riga = righe[i]!;
+      const fine = riga.indexOf(apice);
+      if (fine < 0) {
+        pezzi.push(riga);
+        continue;
+      }
+      if (riga.slice(fine + 1).trim() !== "") throw ambiguo(chiave);
+      pezzi.push(riga.slice(0, fine));
+      return { valore: pezzi.join("\n"), ultimaRiga: i };
+    }
+    throw new ConfigError(
+      `${chiave} in ${percorso}: la virgoletta di apertura non viene mai chiusa.`,
+    );
+  }
 
   for (let i = 0; i < righe.length; i++) {
     const riga = righe[i]!.trim();
@@ -47,23 +72,14 @@ export function leggiFileEnv(percorso: string): Record<string, string> | undefin
 
     const chiusura = grezzo.indexOf(apice, 1);
     if (chiusura >= 0) {
-      if (grezzo.slice(chiusura + 1).trim() !== "") throw valoreAmbiguo(chiave, percorso);
+      if (grezzo.slice(chiusura + 1).trim() !== "") throw ambiguo(chiave);
       valori[chiave] = grezzo.slice(1, chiusura);
       continue;
     }
 
-    const pezzi = [grezzo.slice(1)];
-    while (++i < righe.length) {
-      const successiva = righe[i]!;
-      const fine = successiva.indexOf(apice);
-      if (fine >= 0) {
-        if (successiva.slice(fine + 1).trim() !== "") throw valoreAmbiguo(chiave, percorso);
-        pezzi.push(successiva.slice(0, fine));
-        break;
-      }
-      pezzi.push(successiva);
-    }
-    valori[chiave] = pezzi.join("\n");
+    const esteso = valoreEsteso(i, grezzo.slice(1), apice, chiave);
+    valori[chiave] = esteso.valore;
+    i = esteso.ultimaRiga;
   }
 
   return valori;
@@ -77,10 +93,10 @@ export interface AmbienteRisolto {
 /**
  * The process environment, backed by a `KEY=value` file: the one named by
  * `DOMUSTUDIO_ENV_FILE`, or `.env` in `cwd`. An empty `DOMUSTUDIO_ENV_FILE` skips the
- * lookup, and real environment variables win over the file.
+ * lookup, real environment variables win over the file, and an unreadable
+ * `DOMUSTUDIO_ENV_FILE` throws `ConfigError` where a missing `.env` is silent.
  *
- * Throws `ConfigError` when `DOMUSTUDIO_ENV_FILE` names a file that cannot be read; a
- * missing `.env` is silent. See docs/adr/0005-credentials-from-an-env-file.md.
+ * See docs/adr/0005-credentials-from-an-env-file.md.
  */
 export function risolviAmbiente(
   env: NodeJS.ProcessEnv = process.env,

@@ -1,6 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -10,27 +9,25 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { avviaMockApi, rispondiJson } from "./helpers/mockApi.js";
 import type { MockApi } from "./helpers/mockApi.js";
+import { cartellaTemporanea } from "./helpers/cartella.js";
 
 const eseguiFile = promisify(execFile);
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const BINARIO = resolve(RADICE, "dist/index.js");
 
 let api: MockApi;
-let cartella: string;
+const cartella = cartellaTemporanea("domustudio-stdio-");
 
 beforeEach(async () => {
   api = await avviaMockApi((_req, res) =>
     rispondiJson(res, [{ id: 1, intestazione: "Condominio Via Roma 5", citta: "Treviso" }]),
   );
-  cartella = mkdtempSync(join(tmpdir(), "domustudio-stdio-"));
 });
 
 afterEach(async () => {
   await api.close();
-  rmSync(cartella, { recursive: true, force: true });
 });
 
-/** Runs the built binary from the scratch directory and hands the connected client to `prova`. */
 async function conIlBinario(
   env: Record<string, string>,
   prova: (client: Client) => Promise<void>,
@@ -39,7 +36,7 @@ async function conIlBinario(
     command: process.execPath,
     args: [BINARIO],
     env: { PATH: process.env["PATH"] ?? "", ...env },
-    cwd: cartella,
+    cwd: cartella.percorso,
     stderr: "pipe",
   });
   const client = new Client({ name: "stdio-test", version: "0.0.0" });
@@ -79,7 +76,7 @@ describe("binario stdio", () => {
 
   it("prende le credenziali da un .env nella directory di lavoro", async () => {
     writeFileSync(
-      join(cartella, ".env"),
+      join(cartella.percorso, ".env"),
       `DOMUSTUDIO_ARCHIVES=[{"name":"desa","api_key":"k1"}]\nDOMUSTUDIO_BASE_URL=${api.baseUrl}\n`,
     );
     await conIlBinario({}, async (client) => {
@@ -92,7 +89,7 @@ describe("binario stdio", () => {
   it("esce con codice 1 e un messaggio su stderr se la configurazione manca", async () => {
     const esito = await eseguiFile(process.execPath, [BINARIO], {
       env: { PATH: process.env["PATH"] ?? "" },
-      cwd: cartella,
+      cwd: cartella.percorso,
     }).catch((errore: unknown) => errore as { code: number; stderr: string });
 
     expect((esito as { code: number }).code).toBe(1);

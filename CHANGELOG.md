@@ -18,8 +18,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A `DOMUSTUDIO_ARCHIVES` still holding a literal `${VAR}` is reported as an
   unexpanded client variable rather than as invalid JSON.
-- A quoted `.env` value with anything but whitespace after its closing quote is
-  refused, naming the file and the key, rather than truncated there.
+- A quoted `.env` value is refused, naming the file and the key, when anything
+  but whitespace follows its closing quote or the opening quote is never closed.
+  Either case previously swallowed content in silence.
+- A malformed `DOMUSTUDIO_ARCHIVES` no longer carries the quoted fragment
+  `JSON.parse` puts in its message, which repeated part of the credential.
 - **Configure** in the README is split per client — Claude Code local scope, a
   committed `.mcp.json`, and GUI clients — because the previous single snippet,
   copied into `.mcp.json`, committed the API key ([#4]).

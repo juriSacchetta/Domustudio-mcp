@@ -165,8 +165,7 @@ The symptom is worth recognising: an unexpanded variable is passed through as th
 literal text `${DOMUSTUDIO_ARCHIVES}`, which is not JSON, so the server exits 1
 and the client reports nothing more useful than
 `domustudio (CONNECTION_CLOSED): "Connection closed"`. From 0.2.0 the server
-names that literal on stderr instead. `claude mcp list` also reports an
-unresolved variable.
+names that literal on stderr instead.
 
 Exporting the variable from a shell rc file does make the expansion work, but it
 puts the key in a dotfile — no better than committing it. Prefer `.env`.

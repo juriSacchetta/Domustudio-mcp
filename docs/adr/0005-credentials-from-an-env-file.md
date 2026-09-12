@@ -49,9 +49,10 @@ unexpanded client variable rather than as invalid JSON.
 The parser accepts single-line values and single- or double-quoted values that
 may span lines — the only multi-line form `python-dotenv` accepts, so a `.env`
 shared with a consuming Python project parses the same way here. Anything but
-whitespace after the closing quote is a `ConfigError` naming the file and the
-key, never the value: a double-quoted value holding unescaped quotes would
-otherwise be truncated silently.
+whitespace after the closing quote, or an opening quote that is never closed at
+all, is a `ConfigError` naming the file and the key, never the value. Both cases
+would otherwise swallow content in silence — the second one the entire remainder
+of the file.
 
 **Rejected: a bracket-balanced multi-line form.** #4 asked for it alongside the
 other two. A `.env` whose array spans lines *unquoted* is not readable by
@@ -68,7 +69,9 @@ path, no credentials. The launcher script is unnecessary. Adding an archive is a
 The server parses the whole file, which in a consuming project may hold unrelated
 secrets. It takes only `DOMUSTUDIO_ARCHIVES` and `DOMUSTUDIO_BASE_URL` from it,
 never logs a value, and never propagates the merged environment: the `loadConfig`
-call in `src/index.ts` is its only consumer. The startup line names the file, not its
+call in `src/index.ts` is its only consumer. Keeping that true costs one step —
+`JSON.parse` quotes the offending input in its own message, so that fragment is
+stripped before the parse failure is reported. The startup line names the file, not its
 contents.
 
 Reading secrets from the working directory is the cost. It is bounded by

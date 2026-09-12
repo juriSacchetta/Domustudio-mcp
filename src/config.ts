@@ -7,6 +7,13 @@ import {
 import { ConfigError } from "./errors.js";
 
 const VARIABILE_NON_ESPANSA = /^\$\{[^}]*\}$/;
+const FRAMMENTO_CITATO = /"[^"]*"(\.\.\.)?/g;
+
+/** `JSON.parse` quotes the offending input; the value is a credential, so drop the quotes. */
+function dettaglioJson(cause: unknown): string {
+  const messaggio = cause instanceof Error ? cause.message : String(cause);
+  return messaggio.replace(FRAMMENTO_CITATO, "…");
+}
 
 export interface ArchiveConfig {
   name: string;
@@ -46,9 +53,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   try {
     parsed = JSON.parse(raw);
   } catch (cause) {
-    throw new ConfigError(
-      `${ARCHIVES_ENV_VAR} non è JSON valido: ${cause instanceof Error ? cause.message : String(cause)}`,
-    );
+    throw new ConfigError(`${ARCHIVES_ENV_VAR} non è JSON valido: ${dettaglioJson(cause)}`);
   }
 
   if (!Array.isArray(parsed) || parsed.length === 0) {

@@ -1,31 +1,17 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { leggiFileEnv, risolviAmbiente } from "../src/env.js";
 import { ConfigError } from "../src/errors.js";
+import { cartellaTemporanea } from "./helpers/cartella.js";
 
 const unArchivio = '[{"name":"desa","api_key":"k1"}]';
 
-let cartella: string;
-
-beforeEach(() => {
-  cartella = mkdtempSync(join(tmpdir(), "domustudio-env-"));
-});
-
-afterEach(() => {
-  rmSync(cartella, { recursive: true, force: true });
-});
-
-function scrivi(nome: string, contenuto: string): string {
-  const percorso = join(cartella, nome);
-  writeFileSync(percorso, contenuto);
-  return percorso;
-}
+const cartella = cartellaTemporanea("domustudio-env-");
+const scrivi = (nome: string, contenuto: string): string => cartella.scrivi(nome, contenuto);
 
 describe("leggiFileEnv", () => {
   it("restituisce undefined se il file non esiste", () => {
-    expect(leggiFileEnv(join(cartella, "assente"))).toBeUndefined();
+    expect(leggiFileEnv(join(cartella.percorso, "assente"))).toBeUndefined();
   });
 
   it("legge le assegnazioni e ignora righe vuote e commenti", () => {
@@ -65,6 +51,7 @@ describe("leggiFileEnv", () => {
     ["virgolette doppie attorno a JSON", `DOMUSTUDIO_ARCHIVES="${unArchivio}"\n`],
     ["testo dopo l'apice di chiusura", "A='uno'due\n"],
     ["testo dopo la chiusura di un valore su più righe", "A='uno\ndue' tre\n"],
+    ["apice mai chiuso", "A='non chiuso\nB=due\nC=tre\n"],
   ])("rifiuta un valore troncabile invece di tagliarlo: %s", (_caso, contenuto) => {
     const percorso = scrivi(".env", contenuto);
     expect(() => leggiFileEnv(percorso)).toThrow(ConfigError);
@@ -87,20 +74,20 @@ describe("leggiFileEnv", () => {
 describe("risolviAmbiente", () => {
   it("legge .env dalla directory indicata", () => {
     const percorso = scrivi(".env", `DOMUSTUDIO_ARCHIVES=${unArchivio}\n`);
-    const { ambiente, fileUsato } = risolviAmbiente({}, cartella);
+    const { ambiente, fileUsato } = risolviAmbiente({}, cartella.percorso);
     expect(ambiente["DOMUSTUDIO_ARCHIVES"]).toBe(unArchivio);
     expect(fileUsato).toBe(percorso);
   });
 
   it("lascia vincere l'ambiente reale sul file", () => {
     scrivi(".env", `DOMUSTUDIO_ARCHIVES=${unArchivio}\nDOMUSTUDIO_BASE_URL=http://dal-file/\n`);
-    const { ambiente } = risolviAmbiente({ DOMUSTUDIO_BASE_URL: "http://dall-ambiente/" }, cartella);
+    const { ambiente } = risolviAmbiente({ DOMUSTUDIO_BASE_URL: "http://dall-ambiente/" }, cartella.percorso);
     expect(ambiente["DOMUSTUDIO_BASE_URL"]).toBe("http://dall-ambiente/");
     expect(ambiente["DOMUSTUDIO_ARCHIVES"]).toBe(unArchivio);
   });
 
   it("tace se .env non esiste", () => {
-    const { ambiente, fileUsato } = risolviAmbiente({ DOMUSTUDIO_ARCHIVES: unArchivio }, cartella);
+    const { ambiente, fileUsato } = risolviAmbiente({ DOMUSTUDIO_ARCHIVES: unArchivio }, cartella.percorso);
     expect(fileUsato).toBeUndefined();
     expect(ambiente["DOMUSTUDIO_ARCHIVES"]).toBe(unArchivio);
   });
@@ -110,7 +97,7 @@ describe("risolviAmbiente", () => {
     scrivi(".env", 'DOMUSTUDIO_ARCHIVES=[{"name":"sbagliato","api_key":"x"}]\n');
     const { ambiente, fileUsato } = risolviAmbiente(
       { DOMUSTUDIO_ENV_FILE: "credenziali.env" },
-      cartella,
+      cartella.percorso,
     );
     expect(ambiente["DOMUSTUDIO_ARCHIVES"]).toBe(unArchivio);
     expect(fileUsato).toBe(percorso);
@@ -118,13 +105,13 @@ describe("risolviAmbiente", () => {
 
   it("salta la lettura se DOMUSTUDIO_ENV_FILE è vuoto", () => {
     scrivi(".env", `DOMUSTUDIO_ARCHIVES=${unArchivio}\n`);
-    const { ambiente, fileUsato } = risolviAmbiente({ DOMUSTUDIO_ENV_FILE: "" }, cartella);
+    const { ambiente, fileUsato } = risolviAmbiente({ DOMUSTUDIO_ENV_FILE: "" }, cartella.percorso);
     expect(ambiente["DOMUSTUDIO_ARCHIVES"]).toBeUndefined();
     expect(fileUsato).toBeUndefined();
   });
 
   it("segnala un DOMUSTUDIO_ENV_FILE illeggibile", () => {
-    expect(() => risolviAmbiente({ DOMUSTUDIO_ENV_FILE: "assente.env" }, cartella)).toThrow(
+    expect(() => risolviAmbiente({ DOMUSTUDIO_ENV_FILE: "assente.env" }, cartella.percorso)).toThrow(
       ConfigError,
     );
   });

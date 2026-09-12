@@ -24,9 +24,11 @@ personal-data incident, not merely a service credential.
   as `DOMUSTUDIO_ENV_FILE`, is fine — a path is not a secret. See **Configure**
   in [`README.md`](README.md).
 - **A consuming repository must gitignore its own `.env`.** This repository's
-  `.gitignore` protects this repository and nothing else. The `.env` is parsed
-  for two variables, never logged and never echoed — the startup line names the
-  file, not its contents.
+  `.gitignore` protects this repository and nothing else.
+- **A credential never reaches an error message.** The `.env` is parsed for two
+  variables and the startup line names the file, not its contents. A malformed
+  `DOMUSTUDIO_ARCHIVES` is reported by file and key; the quoted fragment
+  `JSON.parse` puts in its own message is stripped before the error is raised.
 - **Keys never reach a tool result.** An authentication failure names the archive
   and the header, never the value.
 - **The test suite needs no credentials.** `test/live.test.ts` skips unless

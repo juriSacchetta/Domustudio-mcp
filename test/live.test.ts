@@ -10,7 +10,16 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const env = { ...leggiFileEnv(resolve(RADICE, ".env")), ...process.env };
+function credenzialiLocali(): Record<string, string> {
+  try {
+    return leggiFileEnv(resolve(RADICE, ".env")) ?? {};
+  } catch (errore) {
+    console.warn(`.env non leggibile, i test live restano disattivi: ${(errore as Error).message}`);
+    return {};
+  }
+}
+
+const env = { ...credenzialiLocali(), ...process.env };
 const attivo = env["DOMUSTUDIO_LIVE"] === "1" && Boolean(env["DOMUSTUDIO_ARCHIVES"]);
 
 describe.skipIf(!attivo)("API Domustudio reale", () => {
