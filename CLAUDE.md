@@ -31,20 +31,24 @@ Base URL `https://domustudioapi.danea.it/api/external`. The spec's `servers` ent
 | `GET /persona` | yes | `CondGendID` (scopes to one condominio), `FiltroSubentri`, `EsercizioID`, `TagsID`, `SearchQuery`, `OrderBy` |
 | `GET /fornitore` | yes — global, not per-condominio | `Attivi`, `DatiIncompleti`, `Attivita`, `ImpiantoServizioID`, `EserciziID`, `SearchQuery`, `OrderBy` |
 
+"The reference client" below is an existing internal Domustudio client the firm
+already runs in production; its behaviour is cited as evidence, not as an API
+guarantee.
+
 Facts that will bite an independent reimplementation:
 
 - **Auth is one header:** `X-DANEA-API-KEY`, on every endpoint. Send `x-api-version: 1.0` alongside it. The spec marks both `required: false` — they are not optional.
 - **Responses are bare JSON arrays.** No envelope and no total count; no pagination headers are documented in the spec, though the runtime may send some. The reference client pages by incrementing `PageNumber` (1-based) and stopping on the first empty page.
 - **A 401 arrives with a truncated chunked body** (Kestrel). Check the status on the response headers *before* reading the body, or the parse error masks the auth error.
-- **Anagrafiche's client retries 5xx and timeouts only, never 4xx** — a 401 or 404 will not become a 200. That is its policy, not an API guarantee, and it has held in production.
-- `FiltroSubentri` takes `AnagraficaFiltroCondominiAttivi`: `1` tutti, `2` attivi, `3` ex, `4` contabilità, `5` destinatari comunicazioni. Anagrafiche's sync passes `2`.
+- **The reference client retries 5xx and timeouts only, never 4xx** — a 401 or 404 will not become a 200. That is its policy, not an API guarantee, and it has held in production.
+- `FiltroSubentri` takes `AnagraficaFiltroCondominiAttivi`: `1` tutti, `2` attivi, `3` ex, `4` contabilità, `5` destinatari comunicazioni. The reference client's sync passes `2`.
 - **Omitting `PageSize` does not disable paging: it defaults to 20.** Verified against the live API — `/persona` with no `PageNumber`/`PageSize` returned 20 records for a condominio that has more. Always send both.
 - Verified against the live API on 2026-09-11: the response field names match the spec exactly on all three endpoints, with no undocumented extras. Note the casing in `amministratore`: `codfisc` and `partiva`, not `codFisc`/`piva` as on the other schemas.
-- One API key addresses one **archive**. Anagrafiche models credentials as a list and takes coexisting archives as a requirement — configure for several from the start, not one.
+- One API key addresses one **archive**. The reference client models credentials as a list and takes coexisting archives as a requirement — configure for several from the start, not one.
 
 ## Conventions
 
-- Issues on GitHub under the `Amministrazioni-DeSa` org, via the `gh` CLI.
+- Issues on GitHub on this repository, via the `gh` CLI.
 - Domain vocabulary is Italian and stays Italian in identifiers that name domain concepts — `condominio`, `persona`, `fornitore`, `esercizio`. Do not translate them.
 - Decision records go in `docs/adr/`; a `CONTEXT.md` glossary once the vocabulary earns one. Both are patterns the sibling repos follow.
 - Rationale lives in commit messages and `docs/adr/`, never in source comments.

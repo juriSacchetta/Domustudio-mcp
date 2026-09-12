@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The licence is now MIT**, replacing the proprietary "all rights reserved"
+  terms. See [ADR 0006](docs/adr/0006-mit-and-a-public-repository.md).
+- **The repository moved to `juriSacchetta/Domustudio-mcp`.** The old URL
+  redirects, but the install command and every documented link now name the new
+  owner; re-pin anything that hardcodes the old slug.
+
+### Removed
+
+- The vendored `.claude/skills/mcp-builder/` copy, which carried its own
+  Apache-2.0 terms. That path is now gitignored; install the skill per-user
+  instead.
+
 ## [0.2.0] — 2026-09-12
 
 ### Added
@@ -31,7 +47,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   committed `.mcp.json`, and GUI clients — because the previous single snippet,
   copied into `.mcp.json`, committed the API key ([#4]).
 
-[#4]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues/4
+[#4]: https://github.com/juriSacchetta/Domustudio-mcp/issues/4
 
 ## [0.1.0] — 2026-09-11
 
@@ -66,5 +82,6 @@ here:
 - A 401 arrives with a truncated chunked body; the status is classified before
   the body is read.
 
-[0.2.0]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/releases/tag/v0.2.0
-[0.1.0]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/releases/tag/v0.1.0
+[Unreleased]: https://github.com/juriSacchetta/Domustudio-mcp/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/juriSacchetta/Domustudio-mcp/releases/tag/v0.2.0
+[0.1.0]: https://github.com/juriSacchetta/Domustudio-mcp/releases/tag/v0.1.0

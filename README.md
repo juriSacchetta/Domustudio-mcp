@@ -1,6 +1,6 @@
 # domustudio-mcp-server
 
-[![CI](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/actions/workflows/ci.yml)
+[![CI](https://github.com/juriSacchetta/Domustudio-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/juriSacchetta/Domustudio-mcp/actions/workflows/ci.yml)
 
 An MCP server that exposes the **Danea Domustudio** public API — condomini,
 persone, fornitori — as tools an agent can call.
@@ -17,12 +17,12 @@ product.
 
 ## Install it in another repository
 
-The package is not on any registry — it installs straight from this private
-repo, pinned to a release tag. One global install serves every repository on the
+The package is not on any registry — it installs straight from this repository,
+pinned to a release tag. One global install serves every repository on the
 machine.
 
 ```sh
-npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.2.0"
+npm install -g --allow-git=all "github:juriSacchetta/Domustudio-mcp#v0.2.0"
 ```
 
 `--allow-git=all` is required on **npm 12 and later**, which ships
@@ -33,8 +33,8 @@ npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.2.
 npm config set allow-git all
 ```
 
-npm builds `dist/` during install, so the machine needs nothing beyond Node ≥ 20
-and read access to this repo. npm 12 also prints
+npm builds `dist/` during install, so the machine needs nothing beyond
+Node ≥ 22.12 and access to this repository. npm 12 also prints
 `install scripts blocked … (prepare: npm run build)` — that warning is benign
 here: it refers to the consumer's tree, and the build has already run inside
 npm's isolated step for the git dependency. Confirm the install with:
@@ -157,7 +157,7 @@ file lives in your user profile, outside any repository, so the key may sit in i
 `.claude/settings.local.json` `env` did not work: the server never started, and
 the failure reproduced with a control confirming the variable was present in the
 session. That is what
-[#4](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues/4) observed.
+[#4](https://github.com/juriSacchetta/Domustudio-mcp/issues/4) observed.
 Why the expansion missed it — an ordering question between settings `env` and
 `.mcp.json` loading — was not established, so treat the recipe as "this does not
 work", not as a mechanism you can reason around.
@@ -260,6 +260,12 @@ no record content is printed.
 - [`docs/read-only-guard.md`](docs/read-only-guard.md) — the hook that refuses mutating requests
 - [`docs/verification-hook.md`](docs/verification-hook.md) — the hook that runs lint and tests
 
+## Trademarks
+
+Danea and Domustudio are trademarks of their respective owners. This project is
+an independent client of the Domustudio public API, is not affiliated with or
+endorsed by them, and is not supported by them.
+
 ## License
 
-Proprietary — see [`LICENSE`](LICENSE). Copyright (c) 2026 Amministrazioni DeSa.
+MIT — see [`LICENSE`](LICENSE). Copyright (c) 2026 Juri Sacchetta.

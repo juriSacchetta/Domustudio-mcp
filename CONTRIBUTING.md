@@ -30,7 +30,7 @@ Single case: `npx vitest run -t "<part of the test name>"`.
 - **Rationale goes in the commit message or an ADR, never in a source comment.**
   Comments carry contracts and external constraints only.
 - **No AI attribution in commit messages.**
-- Issues live on GitHub under the `Amministrazioni-DeSa` org.
+- Issues live on GitHub on this repository.
 
 ## Adding a tool
 
@@ -53,3 +53,8 @@ is upstream, not here.
 ## Touching credentials
 
 Never commit a real key. See [`SECURITY.md`](SECURITY.md).
+
+## Licence of contributions
+
+This project is MIT-licensed. By submitting a change you agree that it is
+released under those terms.

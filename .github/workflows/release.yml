@@ -48,7 +48,7 @@ jobs:
           Install globally, pinned to this tag:
 
           ```sh
-          npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#__TAG__"
+          npm install -g --allow-git=all "github:juriSacchetta/Domustudio-mcp#__TAG__"
           ```
 
           `--allow-git=all` is required on npm 12+, which defaults `allow-git` to
