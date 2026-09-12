@@ -12,7 +12,7 @@ product.
 
 ## Requirements
 
-- Node.js ≥ 20
+- Node.js ≥ 22.12
 - One Domustudio API key per archive (`X-DANEA-API-KEY`)
 
 ## Install it in another repository
