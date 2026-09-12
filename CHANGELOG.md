@@ -8,7 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **The licence is now MIT**, replacing the proprietary "all rights reserved"
+- **The license is now MIT**, replacing the proprietary "all rights reserved"
   terms. Copyright stays with Amministrazioni DeSa.
 
 ### Removed
@@ -79,5 +79,6 @@ here:
 - A 401 arrives with a truncated chunked body; the status is classified before
   the body is read.
 
+[Unreleased]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/releases/tag/v0.1.0

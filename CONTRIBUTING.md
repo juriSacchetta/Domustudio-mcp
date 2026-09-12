@@ -54,7 +54,7 @@ is upstream, not here.
 
 Never commit a real key. See [`SECURITY.md`](SECURITY.md).
 
-## Licence of contributions
+## License of contributions
 
 This project is MIT-licensed. By submitting a change you agree that it is
 released under those terms.
