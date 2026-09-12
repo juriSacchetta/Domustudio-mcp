@@ -1,5 +1,5 @@
 export const SERVER_NAME = "domustudio-mcp-server";
-export const SERVER_VERSION = "0.2.0";
+export const SERVER_VERSION = "0.3.0";
 
 export const DEFAULT_BASE_URL = "https://domustudioapi.danea.it/api/external";
 export const API_VERSION = "1.0";
