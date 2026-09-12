@@ -6,10 +6,9 @@ Report a suspected vulnerability privately through GitHub's private
 vulnerability reporting on this repository — **Security → Report a
 vulnerability**. Do not open a public issue.
 
-If that form is not offered, message the repository owners through the
-[`Amministrazioni-DeSa`](https://github.com/Amministrazioni-DeSa) organisation
-profile on GitHub. Report privately by some route rather than publicly by a
-convenient one.
+If that form is not offered, message the maintainer through the
+[`juriSacchetta`](https://github.com/juriSacchetta) profile on GitHub. Report
+privately by some route rather than publicly by a convenient one.
 
 ## What this server handles
 

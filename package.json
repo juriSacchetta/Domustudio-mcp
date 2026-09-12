@@ -5,15 +5,15 @@
   "type": "module",
   "license": "MIT",
   "private": true,
-  "author": "Amministrazioni DeSa",
+  "author": "Juri Sacchetta",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Amministrazioni-DeSa/Domustudio-mcp.git"
+    "url": "git+https://github.com/juriSacchetta/Domustudio-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues"
+    "url": "https://github.com/juriSacchetta/Domustudio-mcp/issues"
   },
-  "homepage": "https://github.com/Amministrazioni-DeSa/Domustudio-mcp#readme",
+  "homepage": "https://github.com/juriSacchetta/Domustudio-mcp#readme",
   "keywords": [
     "mcp",
     "model-context-protocol",

@@ -48,7 +48,7 @@ Facts that will bite an independent reimplementation:
 
 ## Conventions
 
-- Issues on GitHub under the `Amministrazioni-DeSa` org, via the `gh` CLI.
+- Issues on GitHub on this repository, via the `gh` CLI.
 - Domain vocabulary is Italian and stays Italian in identifiers that name domain concepts — `condominio`, `persona`, `fornitore`, `esercizio`. Do not translate them.
 - Decision records go in `docs/adr/`; a `CONTEXT.md` glossary once the vocabulary earns one. Both are patterns the sibling repos follow.
 - Rationale lives in commit messages and `docs/adr/`, never in source comments.

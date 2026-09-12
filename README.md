@@ -1,6 +1,6 @@
 # domustudio-mcp-server
 
-[![CI](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/actions/workflows/ci.yml)
+[![CI](https://github.com/juriSacchetta/Domustudio-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/juriSacchetta/Domustudio-mcp/actions/workflows/ci.yml)
 
 An MCP server that exposes the **Danea Domustudio** public API — condomini,
 persone, fornitori — as tools an agent can call.
@@ -22,7 +22,7 @@ pinned to a release tag. One global install serves every repository on the
 machine.
 
 ```sh
-npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.2.0"
+npm install -g --allow-git=all "github:juriSacchetta/Domustudio-mcp#v0.2.0"
 ```
 
 `--allow-git=all` is required on **npm 12 and later**, which ships
@@ -157,7 +157,7 @@ file lives in your user profile, outside any repository, so the key may sit in i
 `.claude/settings.local.json` `env` did not work: the server never started, and
 the failure reproduced with a control confirming the variable was present in the
 session. That is what
-[#4](https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues/4) observed.
+[#4](https://github.com/juriSacchetta/Domustudio-mcp/issues/4) observed.
 Why the expansion missed it — an ordering question between settings `env` and
 `.mcp.json` loading — was not established, so treat the recipe as "this does not
 work", not as a mechanism you can reason around.
@@ -268,4 +268,4 @@ endorsed by them, and is not supported by them.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). Copyright (c) 2026 Amministrazioni DeSa.
+MIT — see [`LICENSE`](LICENSE). Copyright (c) 2026 Juri Sacchetta.
