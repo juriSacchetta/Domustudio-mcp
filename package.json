@@ -1,6 +1,6 @@
 {
   "name": "domustudio-mcp-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server exposing the Danea Domustudio public API (condomini, persone, fornitori) as read-only tools.",
   "type": "module",
   "license": "MIT",

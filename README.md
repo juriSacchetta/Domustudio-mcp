@@ -22,7 +22,7 @@ pinned to a release tag. One global install serves every repository on the
 machine.
 
 ```sh
-npm install -g --allow-git=all "github:juriSacchetta/Domustudio-mcp#v0.2.0"
+npm install -g --allow-git=all "github:juriSacchetta/Domustudio-mcp#v0.3.0"
 ```
 
 `--allow-git=all` is required on **npm 12 and later**, which ships
