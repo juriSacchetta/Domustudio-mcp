@@ -1,8 +1,8 @@
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config.js";
+import { leggiFileEnv } from "../src/env.js";
 import { ArchiveRegistry } from "../src/registry.js";
 import { avviaHarness, testo } from "./helpers/harness.js";
 import { DEFAULT_BASE_URL } from "../src/constants.js";
@@ -10,29 +10,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 const RADICE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Reads `KEY=value` lines from the repo `.env`, which is gitignored and holds real credentials. */
-function leggiDotEnv(): Record<string, string> {
-  let contenuto: string;
-  try {
-    contenuto = readFileSync(resolve(RADICE, ".env"), "utf8");
-  } catch {
-    return {};
-  }
-  const valori: Record<string, string> = {};
-  for (const riga of contenuto.split("\n")) {
-    const pulita = riga.trim();
-    if (!pulita || pulita.startsWith("#")) continue;
-    const separatore = pulita.indexOf("=");
-    if (separatore <= 0) continue;
-    valori[pulita.slice(0, separatore).trim()] = pulita
-      .slice(separatore + 1)
-      .trim()
-      .replace(/^['"]|['"]$/g, "");
-  }
-  return valori;
-}
-
-const env = { ...leggiDotEnv(), ...process.env };
+const env = { ...leggiFileEnv(resolve(RADICE, ".env")), ...process.env };
 const attivo = env["DOMUSTUDIO_LIVE"] === "1" && Boolean(env["DOMUSTUDIO_ARCHIVES"]);
 
 describe.skipIf(!attivo)("API Domustudio reale", () => {

@@ -1,5 +1,12 @@
-import { ARCHIVES_ENV_VAR, BASE_URL_ENV_VAR, DEFAULT_BASE_URL } from "./constants.js";
+import {
+  ARCHIVES_ENV_VAR,
+  BASE_URL_ENV_VAR,
+  DEFAULT_BASE_URL,
+  ENV_FILE_ENV_VAR,
+} from "./constants.js";
 import { ConfigError } from "./errors.js";
+
+const VARIABILE_NON_ESPANSA = /^\$\{[^}]*\}$/;
 
 export interface ArchiveConfig {
   name: string;
@@ -24,6 +31,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
       `Variabile d'ambiente ${ARCHIVES_ENV_VAR} mancante. ` +
         `Attesa una lista JSON di archivi, es. ` +
         `${ARCHIVES_ENV_VAR}='[{"name":"desa","api_key":"..."}]'`,
+    );
+  }
+
+  if (VARIABILE_NON_ESPANSA.test(raw)) {
+    throw new ConfigError(
+      `${ARCHIVES_ENV_VAR} vale ancora "${raw}": il client non ha espanso la variabile. ` +
+        `Togliere il blocco "env" dalla configurazione del client e mettere la chiave in un file ` +
+        `.env nella directory di lavoro del server, oppure indicarlo con ${ENV_FILE_ENV_VAR}.`,
     );
   }
 

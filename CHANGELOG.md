@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- The server reads `DOMUSTUDIO_ARCHIVES` and `DOMUSTUDIO_BASE_URL` from a `.env`
+  in its working directory when the environment does not carry them, so a
+  committed `.mcp.json` needs no `env` block and no credentials.
+  `DOMUSTUDIO_ENV_FILE` names the file explicitly; set it empty to skip the
+  lookup. Real environment variables win over the file.
+
+### Changed
+
+- A `DOMUSTUDIO_ARCHIVES` still holding a literal `${VAR}` is reported as an
+  unexpanded client variable rather than as invalid JSON.
+- A quoted `.env` value with anything but whitespace after its closing quote is
+  refused, naming the file and the key, rather than truncated there.
+- **Configure** in the README is split per client — Claude Code local scope, a
+  committed `.mcp.json`, and GUI clients — because the previous single snippet,
+  copied into `.mcp.json`, committed the API key ([#4]).
+
+[#4]: https://github.com/Amministrazioni-DeSa/Domustudio-mcp/issues/4
+
 ## [0.1.0] — 2026-09-11
 
 First release.

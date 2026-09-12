@@ -16,3 +16,6 @@ export const CHARACTER_LIMIT = 50_000;
 
 export const ARCHIVES_ENV_VAR = "DOMUSTUDIO_ARCHIVES";
 export const BASE_URL_ENV_VAR = "DOMUSTUDIO_BASE_URL";
+export const ENV_FILE_ENV_VAR = "DOMUSTUDIO_ENV_FILE";
+
+export const DEFAULT_ENV_FILE = ".env";

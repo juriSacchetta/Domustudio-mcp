@@ -23,6 +23,12 @@ describe("loadConfig", () => {
     expect(config.baseUrl).toBe("http://127.0.0.1:9999/api/external");
   });
 
+  it("riconosce una variabile non espansa dal client MCP", () => {
+    expect(() => loadConfig({ DOMUSTUDIO_ARCHIVES: "${DOMUSTUDIO_ARCHIVES}" })).toThrow(
+      /non ha espanso la variabile/,
+    );
+  });
+
   it("accetta anche le chiavi camelCase e nome", () => {
     const config = loadConfig({ DOMUSTUDIO_ARCHIVES: '[{"nome":"desa","apiKey":"k1"}]' });
     expect(config.archives).toEqual([{ name: "desa", apiKey: "k1" }]);

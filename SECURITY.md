@@ -18,6 +18,15 @@ personal-data incident, not merely a service credential.
 
 - **`.env` is gitignored and must stay that way.** Real keys live there and
   nowhere else in the tree. `.env.example` carries placeholders only.
+- **No credentials in a committed MCP config.** A project-scoped `.mcp.json`
+  lives at the repository root and is checked in, so no key goes in it: the
+  server reads the developer's own `.env` instead. A path-only `env` block, such
+  as `DOMUSTUDIO_ENV_FILE`, is fine — a path is not a secret. See **Configure**
+  in [`README.md`](README.md).
+- **A consuming repository must gitignore its own `.env`.** This repository's
+  `.gitignore` protects this repository and nothing else. The `.env` is parsed
+  for two variables, never logged and never echoed — the startup line names the
+  file, not its contents.
 - **Keys never reach a tool result.** An authentication failure names the archive
   and the header, never the value.
 - **The test suite needs no credentials.** `test/live.test.ts` skips unless
