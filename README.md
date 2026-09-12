@@ -33,8 +33,8 @@ npm install -g --allow-git=all "github:Amministrazioni-DeSa/Domustudio-mcp#v0.2.
 npm config set allow-git all
 ```
 
-npm builds `dist/` during install, so the machine needs nothing beyond Node ≥
-22.12 and access to this repository. npm 12 also prints
+npm builds `dist/` during install, so the machine needs nothing beyond
+Node ≥ 22.12 and access to this repository. npm 12 also prints
 `install scripts blocked … (prepare: npm run build)` — that warning is benign
 here: it refers to the consumer's tree, and the build has already run inside
 npm's isolated step for the git dependency. Confirm the install with:
@@ -262,9 +262,9 @@ no record content is printed.
 
 ## Trademarks
 
-Danea and Domustudio are trademarks of their respective owner. This project is
+Danea and Domustudio are trademarks of their respective owners. This project is
 an independent client of the Domustudio public API, is not affiliated with or
-endorsed by Danea, and is not supported by them.
+endorsed by them, and is not supported by them.
 
 ## License
 

@@ -7,8 +7,9 @@ Status: **Accepted.**
 
 `/persona` and `/fornitore` are paginated by `PageNumber` (1-based) and
 `PageSize`. The response is a bare JSON array: no envelope, no total count, no
-documented pagination headers. The reference client pages by incrementing
-`PageNumber` until a page comes back empty.
+documented pagination headers. The reference client — an internal Domustudio
+client the firm already runs in production — pages by incrementing `PageNumber`
+until a page comes back empty.
 
 MCP guidance asks list tools to return `total_count`, `has_more` and a next
 offset. Two of the three cannot be computed here, and the third only by

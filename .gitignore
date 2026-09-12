@@ -4,4 +4,4 @@ dist/
 *.tsbuildinfo
 coverage/
 *.tgz
-.claude/skills/
+.claude/skills/mcp-builder/

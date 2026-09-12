@@ -6,9 +6,10 @@ Status: **Accepted.**
 ## Context
 
 One Domustudio API key addresses exactly one archive. The firm runs more than
-one, and the reference client already models credentials as a list rather than a
-single key — retrofitting that shape onto a server built for one archive would
-mean changing every tool signature.
+one, and the reference client — an internal Domustudio client the firm already
+runs in production — models credentials as a list rather than a single key.
+Retrofitting that shape onto a server built for one archive would mean changing
+every tool signature.
 
 ## Decision
 

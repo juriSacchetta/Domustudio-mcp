@@ -8,14 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **The license is now MIT**, replacing the proprietary "all rights reserved"
-  terms. Copyright stays with Amministrazioni DeSa.
+- **The licence is now MIT**, replacing the proprietary "all rights reserved"
+  terms. Copyright stays with Amministrazioni DeSa. See
+  [ADR 0006](docs/adr/0006-mit-and-a-public-repository.md).
 
 ### Removed
 
 - The vendored `.claude/skills/mcp-builder/` copy, which carried its own
-  Apache-2.0 terms. `.claude/skills/` is now gitignored; install the skill
-  per-user instead.
+  Apache-2.0 terms. That path is now gitignored; install the skill per-user
+  instead.
 
 ## [0.2.0] — 2026-09-12
 
