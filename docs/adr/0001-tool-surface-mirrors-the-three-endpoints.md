@@ -19,7 +19,9 @@ be built honestly here. Reading the OpenAPI schemas:
 A persona record carries `descr`, `codFisc`, addresses and contacts, and nothing
 that identifies it to the API. Neither does a fornitore. There is no endpoint
 that accepts one, either. The only stable handle the API exposes is the
-condominio `id`, and its only use is as `CondGendID` when listing persone.
+condominio `id`, and its only use is as `CondGenID` when listing persone.
+Listing persone requires this building id; archive-wide searches enumerate
+condomini and follow each building's pagination.
 
 An agent that is handed `get_persona` will assume such an identifier exists,
 will look for it in the returned records, and will not find it.

@@ -172,10 +172,10 @@ describe("DomustudioClient.getPages", () => {
   it("inoltra i filtri su ogni pagina", async () => {
     api.setGestore(gestorePaginato(5, (i) => ({ descr: `p${i}` })));
 
-    await client().getPages("persona", { CondGendID: 42, FiltroSubentri: 2 }, 1, 2, 50);
+    await client().getPages("persona", { CondGenID: 42, FiltroSubentri: 2 }, 1, 2, 50);
 
     for (const richiesta of api.richieste) {
-      expect(richiesta.query.get("CondGendID")).toBe("42");
+      expect(richiesta.query.get("CondGenID")).toBe("42");
       expect(richiesta.query.get("FiltroSubentri")).toBe("2");
     }
   });

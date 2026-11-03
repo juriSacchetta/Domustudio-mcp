@@ -28,7 +28,7 @@ Base URL `https://domustudioapi.danea.it/api/external`. The spec's `servers` ent
 | Endpoint | Paginated | Notable parameters |
 |---|---|---|
 | `GET /condominio` | no — returns the full list | none |
-| `GET /persona` | yes | `CondGendID` (scopes to one condominio), `FiltroSubentri`, `EsercizioID`, `TagsID`, `SearchQuery`, `OrderBy` |
+| `GET /persona` | yes | `CondGenID` (required condominio id), `FiltroSubentri`, `EsercizioID`, `TagsID`, `SearchQuery`, `OrderBy` |
 | `GET /fornitore` | yes — global, not per-condominio | `Attivi`, `DatiIncompleti`, `Attivita`, `ImpiantoServizioID`, `EserciziID`, `SearchQuery`, `OrderBy` |
 
 "The reference client" below is an existing internal Domustudio client the firm

@@ -24,13 +24,15 @@ export function registraStrumentiPersone(server: McpServer, registry: ArchiveReg
     "domustudio_list_persone",
     {
       title: "Elenca persone (anagrafica soggetti)",
-      description: `Elenca le persone dell'anagrafica Domustudio, opzionalmente ristrette a un condominio.
+      description: `Elenca le persone dell'anagrafica Domustudio di un condominio.
+
+Il condominio è obbligatorio. Per cercare in tutto l'archivio, ottenere gli id con domustudio_list_condomini e interrogare ogni condominio, seguendo la paginazione di ciascuno.
 
 L'API non espone un identificatore per le persone: il record non contiene alcun id, quindi non esiste una lettura per id e non c'è modo di indirizzare una persona singola. Per trovare qualcuno si filtra questo elenco (search_query, oppure condominio_id più una lettura dei risultati).
 
 Args:
   - archivio (string, opzionale): archivio da interrogare
-  - condominio_id (number, opzionale): restringe a un condominio (parametro CondGendID). Ottenerlo da domustudio_list_condomini
+  - condominio_id (number, obbligatorio): condominio da interrogare (parametro CondGenID). Ottenerlo da domustudio_list_condomini
   - filtro_subentri (1|2|3|4|5): 1 tutti, 2 attivi, 3 ex, 4 contabilità, 5 destinatari comunicazioni. Default 2
   - esercizio_id (number, opzionale): parametro EsercizioID
   - tags_id (number[], opzionale): parametro TagsID
@@ -67,8 +69,7 @@ ${NOTA_SOLA_LETTURA}`,
         condominio_id: z
           .number()
           .int()
-          .optional()
-          .describe("Id del condominio (CondGendID). Omesso, l'API restituisce le persone di tutto l'archivio."),
+          .describe("Id obbligatorio del condominio (CondGenID), ottenuto da domustudio_list_condomini."),
         filtro_subentri: z
           .union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)])
           .default(2)
@@ -95,7 +96,7 @@ ${NOTA_SOLA_LETTURA}`,
         const { elementi, pagineLette, troncato } = await client.getPages(
           "persona",
           {
-            CondGendID: args.condominio_id,
+            CondGenID: args.condominio_id,
             FiltroSubentri: args.filtro_subentri,
             EsercizioID: args.esercizio_id,
             TagsID: args.tags_id,
@@ -122,13 +123,11 @@ ${NOTA_SOLA_LETTURA}`,
           struttura as unknown as Record<string, unknown>,
           () => {
             if (struttura.conteggio === 0) {
-              return `Nessuna persona trovata nell'archivio "${client.archivio}"${
-                args.condominio_id !== undefined ? ` per il condominio ${args.condominio_id}` : ""
-              }.`;
+              return `Nessuna persona trovata nell'archivio "${client.archivio}" per il condominio ${args.condominio_id}.`;
             }
             const testata =
               `# Persone (${struttura.conteggio}) — archivio "${client.archivio}"` +
-              (args.condominio_id !== undefined ? `, condominio ${args.condominio_id}` : "") +
+              `, condominio ${args.condominio_id}` +
               `\n\nPagina ${struttura.pagina}, ${struttura.pagine_lette} pagina/e lette.` +
               (struttura.ha_altre_pagine
                 ? ` Altre pagine disponibili: richiedere pagina ${struttura.prossima_pagina}.`
