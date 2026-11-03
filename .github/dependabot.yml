@@ -8,6 +8,9 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      - dependency-name: typescript
+        versions: ["7.x"]
 
   - package-ecosystem: github-actions
     directory: /
