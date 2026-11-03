@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { MAX_PAGES_PER_CALL, MAX_PAGE_SIZE } from "../src/constants.js";
+import { condominioMarkdown } from "../src/format.js";
 import { avviaHarness, testo } from "./helpers/harness.js";
 import type { Harness } from "./helpers/harness.js";
 import {
@@ -122,11 +123,44 @@ describe("domustudio_list_condomini", () => {
     expect(testo(risultato)).toContain("## Residenza Aurora — id 2");
   });
 
-  it("restituisce il record completo in json", async () => {
+  it("restituisce solo i campi identificativi in json", async () => {
     await apri();
     const risultato = await chiama("domustudio_list_condomini", { response_format: "json" });
     const analizzato = JSON.parse(testo(risultato)) as Record<string, unknown>;
-    expect(analizzato["elementi"]).toEqual(CONDOMINI);
+    expect(analizzato["elementi"]).toEqual([
+      { id: 1, intestazione: "Condominio Via Roma 5", indirizzo: "Via Roma 5", cap: "31100", citta: "Treviso", prov: "TV", codFisc: "94000000001" },
+      { id: 2, intestazione: "Residenza Aurora", indirizzo: "Viale Europa 10", cap: "30100", citta: "Venezia", prov: "VE", codFisc: "94000000002" },
+    ]);
+    expect(testo(risultato)).not.toContain("amministratore");
+  });
+
+  it.each(["json", "markdown"])("limita un archivio grande e rende navigabili tutti gli ID in %s", async (response_format) => {
+    const records = Array.from({ length: 112 }, (_, i) => ({ ...CONDOMINI[0], id: i + 1, note: "x".repeat(4000) }));
+    api.setGestore((_req, res) => rispondiJson(res, records));
+    await apri();
+    const ids: unknown[] = [];
+    for (let pagina = 1; pagina <= 5; pagina++) {
+      const risultato = await chiama("domustudio_list_condomini", { pagina, response_format });
+      const struttura = risultato.structuredContent!;
+      expect(struttura).toMatchObject({ pagina, dimensione_pagina: 25, totale: 112, conteggio: pagina === 5 ? 12 : 25, ha_altre_pagine: pagina < 5 });
+      expect(struttura["prossima_pagina"]).toBe(pagina < 5 ? pagina + 1 : undefined);
+      const elementi = struttura["elementi"] as Record<string, unknown>[];
+      ids.push(...elementi.map((r) => r["id"]));
+      expect(testo(risultato)).not.toContain("amministratore");
+      expect(testo(risultato)).not.toContain("note");
+      if (response_format === "json") {
+        const vecchioRisultato = JSON.stringify({ archivio: "desa", conteggio: records.length, elementi: records }, null, 2);
+        expect(Buffer.byteLength(testo(risultato))).toBeLessThan(Buffer.byteLength(vecchioRisultato) / 10);
+        expect(JSON.parse(testo(risultato))).toEqual(struttura);
+      }
+      else {
+        const vecchioRisultato = [`# Condomini (${records.length}) — archivio "desa"`, "", ...records.map(condominioMarkdown)].join("\n\n");
+        expect(Buffer.byteLength(testo(risultato))).toBeLessThan(Buffer.byteLength(vecchioRisultato));
+        expect(testo(risultato)).toContain(`Pagina ${pagina}`);
+      }
+    }
+    expect(ids).toEqual(Array.from({ length: 112 }, (_, i) => i + 1));
+    expect(api.richieste.every((r) => [...r.query.keys()].length === 0)).toBe(true);
   });
 
   it("filtra localmente sulla ricerca, senza parametri aggiuntivi verso l'API", async () => {
@@ -137,6 +171,39 @@ describe("domustudio_list_condomini", () => {
     expect(risultato.structuredContent).toMatchObject({ conteggio: 1, ricerca: "venezia" });
     expect(testo(risultato)).toContain("Residenza Aurora");
     expect(testo(risultato)).not.toContain("Via Roma 5");
+  });
+
+  it.each(["intestazione", "indirizzo", "citta", "prov", "codFisc"])("filtra %s prima di paginare, ignorando il caso", async (campo) => {
+    const records = Array.from({ length: 60 }, (_, i) => ({ id: i + 1, [campo]: i % 2 ? "AGO" : "altro" }));
+    api.setGestore((_req, res) => rispondiJson(res, records));
+    await apri();
+    const risultato = await chiama("domustudio_list_condomini", { ricerca: "ago", pagina: 2, dimensione_pagina: 10 });
+    expect(risultato.structuredContent).toMatchObject({ conteggio: 10, totale: 30, pagina: 2, dimensione_pagina: 10, ha_altre_pagine: true, prossima_pagina: 3 });
+    expect((risultato.structuredContent!["elementi"] as Record<string, unknown>[]).map((r) => r["id"])).toEqual([22, 24, 26, 28, 30, 32, 34, 36, 38, 40]);
+  });
+
+  it.each([{}, { ricerca: "inesistente" }, { pagina: 3 }])("segnala esplicitamente pagine vuote: %j", async (args) => {
+    if (Object.keys(args).length === 0) api.setGestore((_req, res) => rispondiJson(res, []));
+    await apri();
+    const risultato = await chiama("domustudio_list_condomini", args);
+    expect(risultato.structuredContent).toMatchObject({ conteggio: 0, totale: "pagina" in args ? 2 : 0, ha_altre_pagine: false, elementi: [] });
+    expect(risultato.structuredContent!["prossima_pagina"]).toBeUndefined();
+    expect(testo(risultato)).toContain("Altre pagine: no.");
+    expect(testo(risultato)).toContain("Nessun condominio");
+  });
+
+  it.each([{ pagina: 0 }, { pagina: -1 }, { pagina: 1.5 }, { pagina: "2" }, { dimensione_pagina: 0 }, { dimensione_pagina: -1 }, { dimensione_pagina: 1.5 }, { dimensione_pagina: 101 }, { dimensione_pagina: "25" }])("rifiuta parametri non validi prima dell'API: %j", async (args) => {
+    await apri();
+    expect((await chiama("domustudio_list_condomini", args)).isError).toBe(true);
+    expect(api.richieste).toHaveLength(0);
+  });
+
+  it("accetta il massimo di 100 e non propone una pagina vuota dopo una pagina piena finale", async () => {
+    api.setGestore((_req, res) => rispondiJson(res, Array.from({ length: 100 }, (_, i) => ({ id: i + 1 }))));
+    await apri();
+    const risultato = await chiama("domustudio_list_condomini", { dimensione_pagina: 100 });
+    expect(risultato.structuredContent).toMatchObject({ conteggio: 100, totale: 100, ha_altre_pagine: false });
+    expect(risultato.structuredContent!["prossima_pagina"]).toBeUndefined();
   });
 
   it("dichiara esplicitamente l'assenza di risultati", async () => {
@@ -179,6 +246,13 @@ describe("domustudio_get_condominio", () => {
     const risultato = await chiama("domustudio_get_condominio", { condominio_id: 2 });
     expect(risultato.structuredContent).toMatchObject({ trovato: true });
     expect(testo(risultato)).toContain("## Residenza Aurora — id 2");
+  });
+
+  it("mantiene il record completo nel dettaglio JSON", async () => {
+    await apri();
+    const risultato = await chiama("domustudio_get_condominio", { condominio_id: 1, response_format: "json" });
+    expect(risultato.structuredContent).toEqual({ archivio: "desa", trovato: true, condominio: CONDOMINI[0] });
+    expect(JSON.parse(testo(risultato))).toEqual(risultato.structuredContent);
   });
 
   it("riporta trovato=false per un id assente, senza errore di protocollo", async () => {

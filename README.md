@@ -192,7 +192,7 @@ archive and the header, not the value. The startup line on stderr names the
 | Tool | What it does |
 |---|---|
 | `domustudio_list_archivi` | Names of the configured archives |
-| `domustudio_list_condomini` | All condomini; optional local `ricerca` filter |
+| `domustudio_list_condomini` | Compact pages of condomini; optional local `ricerca` filter |
 | `domustudio_get_condominio` | One condominio by `id` |
 | `domustudio_list_persone` | Persone for a required condominio; paginated |
 | `domustudio_list_fornitori` | Fornitori of the whole archive; paginated |
@@ -203,7 +203,8 @@ Every tool takes an optional `archivio`. With a single archive configured it may
 be omitted; with several, omitting it returns an error listing the names.
 
 Every tool takes `response_format`: `markdown` (default) renders the main fields
-for reading, `json` returns the full API record. Integer enums are decoded to
+for reading, `json` returns the full API record except for condominium lists,
+which are compact in both formats. Integer enums are decoded to
 `{ codice, etichetta }`.
 
 ### What the API does not give you
@@ -215,10 +216,30 @@ condominio `id` is the only stable handle the API exposes, and it is what
 `domustudio_list_persone` takes as `condominio_id`.
 
 `condominio_id` is required and is sent to the API as `CondGenID`.
-For an archive-wide person search, list the condomini first, then call
+For an archive-wide person search, follow all condominium list pages first, then call
 `domustudio_list_persone` for each id and follow each building's pagination.
 
-**There is no total count.** Responses are bare JSON arrays. `ha_altre_pagine`
+### Compact condominium lists (0.5.0 contract change)
+
+`domustudio_list_condomini` defaults to `pagina: 1`, `dimensione_pagina: 25`
+(maximum 100). If the building name or address is known, pass `ricerca` first.
+The case-insensitive local filter runs before pagination. Danea still returns
+the complete list upstream; only the selected compact page enters the MCP result.
+
+Both text and `structuredContent` contain only `id`, `intestazione`, `indirizzo`,
+`cap`, `citta`, `prov`, and `codFisc` where present, with `archivio` in the envelope.
+`conteggio` counts the current page, `totale` counts all matches, and
+`ha_altre_pagine` is exact. When true, pass `prossima_pagina` as the next `pagina`
+with the same archive, filter and page size. Empty and out-of-range pages contain
+no elements and no next page. Each call reads the archive afresh; enumeration
+assumes the upstream list stays unchanged between calls.
+
+Existing clients must follow pages instead of treating one response as a full
+inventory. Use `domustudio_get_condominio` for the complete record, including
+administrator and other details. There is no all-pages bypass for condominium
+lists. Other tools retain their existing contracts.
+
+**Persone and fornitori have no total count.** Responses are bare JSON arrays. `ha_altre_pagine`
 is therefore a heuristic — true when the last page read was full — and is
 documented as such in the tool descriptions.
 

@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — Unreleased
+
+### Changed
+
+- `domustudio_list_condomini` now returns compact local pages in both JSON and
+  Markdown (25 records by default, maximum 100). `ricerca` filters before paging;
+  `totale` is exact and `prossima_pagina` makes continuation explicit. This is a
+  list contract change: clients must follow pages for complete inventories and
+  use `domustudio_get_condominio` for full records. Full upstream records no
+  longer enter either the text or structured list result. No all-pages bypass
+  is provided ([#43](https://github.com/juriSacchetta/Domustudio-mcp/issues/43)).
+
 ## [0.4.0] — 2026-09-12
 
 ### Fixed
