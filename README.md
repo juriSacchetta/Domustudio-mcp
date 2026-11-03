@@ -194,7 +194,7 @@ archive and the header, not the value. The startup line on stderr names the
 | `domustudio_list_archivi` | Names of the configured archives |
 | `domustudio_list_condomini` | All condomini; optional local `ricerca` filter |
 | `domustudio_get_condominio` | One condominio by `id` |
-| `domustudio_list_persone` | Persone, optionally scoped to a condominio; paginated |
+| `domustudio_list_persone` | Persone for a required condominio; paginated |
 | `domustudio_list_fornitori` | Fornitori of the whole archive; paginated |
 
 All five are annotated `readOnlyHint: true`, `destructiveHint: false`.
@@ -213,6 +213,10 @@ and no endpoint accepts one, so there is no `get_persona` and no
 `get_fornitore` — a person or supplier is reached by filtering a list. The
 condominio `id` is the only stable handle the API exposes, and it is what
 `domustudio_list_persone` takes as `condominio_id`.
+
+`condominio_id` is required and is sent to the API as `CondGenID`.
+For an archive-wide person search, list the condomini first, then call
+`domustudio_list_persone` for each id and follow each building's pagination.
 
 **There is no total count.** Responses are bare JSON arrays. `ha_altre_pagine`
 is therefore a heuristic — true when the last page read was full — and is

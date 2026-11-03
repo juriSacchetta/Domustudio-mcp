@@ -191,6 +191,32 @@ describe("domustudio_get_condominio", () => {
 });
 
 describe("domustudio_list_persone", () => {
+  it("richiede il condominio prima di chiamare l'API", async () => {
+    await apri();
+    const { tools } = await harness.client.listTools();
+    const persone = tools.find((t) => t.name === "domustudio_list_persone")!;
+    const risultato = await chiama("domustudio_list_persone");
+    expect(risultato.isError).toBe(true);
+    expect(testo(risultato)).toContain("condominio_id");
+    expect(api.richieste).toHaveLength(0);
+    expect(persone.inputSchema.required).toContain("condominio_id");
+  });
+
+  it("usa CondGenID per leggere le persone del condominio", async () => {
+    api.setGestore((_req, res, richiesta) => {
+      if (richiesta.query.get("CondGenID") !== "7") {
+        rispondiJson(res, { code: 108, message: "Condominio non presente" }, 404);
+        return;
+      }
+      rispondiJson(res, [{ descr: "Persona di prova" }]);
+    });
+    await apri();
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 7 });
+    expect(risultato.isError).toBeFalsy();
+    expect(risultato.structuredContent).toMatchObject({ conteggio: 1 });
+    expect(api.richieste[0]!.query.has("CondGendID")).toBe(false);
+  });
+
   it("applica i valori di default: filtro subentri 2, pagina 1, pagina da 50", async () => {
     api.setGestore(gestorePaginato(3, (i) => ({ descr: `Persona ${i}` })));
     await apri();
@@ -198,7 +224,7 @@ describe("domustudio_list_persone", () => {
 
     const query = api.richieste[0]!.query;
     expect(api.richieste[0]!.path).toBe("/api/external/persona");
-    expect(query.get("CondGendID")).toBe("7");
+    expect(query.get("CondGenID")).toBe("7");
     expect(query.get("FiltroSubentri")).toBe("2");
     expect(query.get("PageNumber")).toBe("1");
     expect(query.get("PageSize")).toBe("50");
@@ -244,7 +270,7 @@ describe("domustudio_list_persone", () => {
   it("segnala altre pagine quando la pagina letta è piena", async () => {
     api.setGestore(gestorePaginato(100, (i) => ({ descr: `Persona ${i}` })));
     await apri();
-    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: 10 });
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 1, dimensione_pagina: 10 });
 
     expect(risultato.structuredContent).toMatchObject({
       conteggio: 10,
@@ -260,7 +286,7 @@ describe("domustudio_list_persone", () => {
   it("non segnala altre pagine quando la pagina letta è corta", async () => {
     api.setGestore(gestorePaginato(4, (i) => ({ descr: `Persona ${i}` })));
     await apri();
-    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: 10 });
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 1, dimensione_pagina: 10 });
 
     expect(risultato.structuredContent).toMatchObject({
       ha_altre_pagine: false,
@@ -274,6 +300,7 @@ describe("domustudio_list_persone", () => {
     api.setGestore(gestorePaginato(25, (i) => ({ descr: `Persona ${i}` })));
     await apri();
     const risultato = await chiama("domustudio_list_persone", {
+      condominio_id: 1,
       dimensione_pagina: 10,
       tutte_le_pagine: true,
     });
@@ -290,6 +317,7 @@ describe("domustudio_list_persone", () => {
     api.setGestore(gestorePaginato(MAX_PAGES_PER_CALL * 10 + 5, (i) => ({ descr: `Persona ${i}` })));
     await apri();
     const risultato = await chiama("domustudio_list_persone", {
+      condominio_id: 1,
       dimensione_pagina: 10,
       tutte_le_pagine: true,
     });
@@ -306,7 +334,7 @@ describe("domustudio_list_persone", () => {
   it("parte dalla pagina richiesta", async () => {
     api.setGestore(gestorePaginato(100, (i) => ({ descr: `Persona ${i}` })));
     await apri();
-    const risultato = await chiama("domustudio_list_persone", { pagina: 3, dimensione_pagina: 5 });
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 1, pagina: 3, dimensione_pagina: 5 });
 
     expect(api.richieste[0]!.query.get("PageNumber")).toBe("3");
     expect(risultato.structuredContent).toMatchObject({ pagina: 3, prossima_pagina: 4 });
@@ -323,7 +351,7 @@ describe("domustudio_list_persone", () => {
 
   it("rifiuta una dimensione di pagina fuori scala prima di chiamare l'API", async () => {
     await apri();
-    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: 5000 });
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 1, dimensione_pagina: 5000 });
     expect(risultato.isError).toBe(true);
     expect(testo(risultato)).toContain("dimensione_pagina");
     expect(api.richieste).toHaveLength(0);
@@ -331,7 +359,7 @@ describe("domustudio_list_persone", () => {
 
   it("rifiuta una dimensione di pagina oltre il tetto invece di perdere righe", async () => {
     await apri();
-    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: 200 });
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 1, dimensione_pagina: 200 });
 
     expect(risultato.isError).toBe(true);
     expect(testo(risultato)).toContain("dimensione_pagina");
@@ -341,7 +369,7 @@ describe("domustudio_list_persone", () => {
   it("alla dimensione massima riempie la pagina e segnala il seguito", async () => {
     api.setGestore(gestorePaginato(MAX_PAGE_SIZE + 1, (i) => ({ descr: `Persona ${i}` })));
     await apri();
-    const risultato = await chiama("domustudio_list_persone", { dimensione_pagina: MAX_PAGE_SIZE });
+    const risultato = await chiama("domustudio_list_persone", { condominio_id: 1, dimensione_pagina: MAX_PAGE_SIZE });
 
     expect(risultato.structuredContent).toMatchObject({
       conteggio: MAX_PAGE_SIZE,

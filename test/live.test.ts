@@ -42,13 +42,16 @@ describe.skipIf(!attivo)("API Domustudio reale", () => {
 
   it("non serve più righe del tetto, per quanto se ne chiedano", async (ctx) => {
     const client = new ArchiveRegistry(config).resolve(config.archives[0]!.name);
+    const condomini = await client.get("condominio");
+    expect(condomini.length).toBeGreaterThan(0);
+    const CondGenID = condomini[0]!["id"];
 
-    const oltreLaPrima = await client.get("persona", { PageNumber: 2, PageSize: MAX_PAGE_SIZE });
+    const oltreLaPrima = await client.get("persona", { CondGenID, PageNumber: 2, PageSize: MAX_PAGE_SIZE });
     if (oltreLaPrima.length === 0) {
       ctx.skip(`l'archivio non arriva a ${MAX_PAGE_SIZE} persone: il tetto non è misurabile`);
     }
 
-    const chiestoIlDoppio = await client.get("persona", { PageNumber: 1, PageSize: MAX_PAGE_SIZE * 2 });
+    const chiestoIlDoppio = await client.get("persona", { CondGenID, PageNumber: 1, PageSize: MAX_PAGE_SIZE * 2 });
     expect(chiestoIlDoppio).toHaveLength(MAX_PAGE_SIZE);
   });
 
